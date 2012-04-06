@@ -5,7 +5,8 @@
        "name": "Marcus Olsson",
        "email": "marcus.h.olsson@gmail.com",
        "web": "http://www.slickstreamer.info",
-       "twitter": "_macke_"
+       "twitter": "_macke_"}
+, "license": "MIT"
 , "main": "./telldus"
 , "scripts": { "install": "node-waf configure build" }
 }
