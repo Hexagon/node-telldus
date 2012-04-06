@@ -1,3 +1,3 @@
 var addon = require('./build/Release/telldus');
 
-console.log(addon.TdGetNumberOfDevices());
+console.log(addon.TdGetDevices());
