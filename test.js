@@ -1,3 +1,3 @@
-var addon = require('./build/Release/telldus');
+var telldus = require('./telldus');
 
-console.log(addon.TdGetDevices());
+console.log(telldus.getDevices());

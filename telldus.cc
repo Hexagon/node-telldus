@@ -36,7 +36,7 @@ namespace telldus_v8 {
 
     const int DATA_LENGTH = 20;
 
-    Handle<Value> TdGetNumberOfDevices( const Arguments& args ) {
+    Handle<Value> getNumberOfDevices( const Arguments& args ) {
         HandleScope scope;
         //tdInit();
         Local<Number> num = Number::New(tdGetNumberOfDevices());
@@ -146,7 +146,7 @@ namespace telldus_v8 {
         return obj;
     }
     
-    Handle<Value> TdGetDevices( const Arguments& args ) {
+    Handle<Value> getDevices( const Arguments& args ) {
         HandleScope scope;
         tdInit();
 
@@ -166,14 +166,11 @@ namespace telldus_v8 {
 extern "C"
 void init(Handle<Object> target) {
     
-     HandleScope scope;
-  //Local<FunctionTemplate> t = FunctionTemplate::New(telldus_v8::tdGetNumberOfDevices);
-
-  //target->Set( String::NewSymbol( "tdGetNumberOfDevices" ), t->GetFunction() );
-   target->Set(String::NewSymbol("TdGetNumberOfDevices"),
-      FunctionTemplate::New(telldus_v8::TdGetNumberOfDevices)->GetFunction());
-   target->Set(String::NewSymbol("TdGetDevices"),
-      FunctionTemplate::New(telldus_v8::TdGetDevices)->GetFunction());
+    HandleScope scope;
+   target->Set(String::NewSymbol("getNumberOfDevices"),
+      FunctionTemplate::New(telldus_v8::getNumberOfDevices)->GetFunction());
+   target->Set(String::NewSymbol("getDevices"),
+      FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
 }
 
 NODE_MODULE(telldus, init)
