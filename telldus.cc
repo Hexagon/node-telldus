@@ -50,39 +50,56 @@ namespace telldus_v8 {
         int i = 0;
         if (methods & TELLSTICK_TURNON)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_TURNON"));
+            methodsObj->Set(i++, String::New("TURNON"));
         }
         if (methods & TELLSTICK_TURNOFF)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_TURNOFF"));
+            methodsObj->Set(i++, String::New("TURNOFF"));
         }
         if (methods & TELLSTICK_BELL)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_BELL"));
+            methodsObj->Set(i++, String::New("BELL"));
         }
         if (methods & TELLSTICK_TOGGLE)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_TOGGLE"));
+            methodsObj->Set(i++, String::New("TOGGLE"));
         }
         if (methods & TELLSTICK_DIM)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_DIM"));
+            methodsObj->Set(i++, String::New("DIM"));
         }
         if (methods & TELLSTICK_UP)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_UP"));
+            methodsObj->Set(i++, String::New("UP"));
         }
         if (methods & TELLSTICK_DOWN)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_DOWN"));
+            methodsObj->Set(i++, String::New("DOWN"));
         }
         if (methods & TELLSTICK_STOP)
         {
-            methodsObj->Set(i++, String::New("TELLSTICK_STOP"));
+            methodsObj->Set(i++, String::New("STOP"));
         }
 
         return methodsObj;
 
+    }
+
+    Local<String> GetDeviceType(int id){
+        int type = tdGetDeviceType(id);
+
+        if(type & TELLSTICK_TYPE_DEVICE){
+            return String::New("DEVICE");
+        }
+
+        if(type & TELLSTICK_TYPE_GROUP){
+            return String::New("GROUP");
+        }
+
+        if(type & TELLSTICK_TYPE_SCENE){
+            return String::New("SCENE");
+        }
+        return String::New("UNKNOWN");
     }
     
     Local<Object> GetDevice(int index){
@@ -90,14 +107,14 @@ namespace telldus_v8 {
         int id = tdGetDeviceId( index );
         char *name = tdGetName( id );
         char *model = tdGetModel(id);
-        int methods = tdMethods( id, SUPPORTED_METHODS );
-
+     
         Local<Object> obj = Object::New();
         obj->Set(String::NewSymbol("name"), String::New(name, strlen(name)));
         obj->Set(String::NewSymbol("id"), Number::New(id));
         obj->Set(String::NewSymbol("metods"), GetSuportedMetods(id));
         obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
-        
+        obj->Set(String::NewSymbol("type"), GetDeviceType(id));
+
         tdReleaseString(name);
         tdReleaseString(model);
 
