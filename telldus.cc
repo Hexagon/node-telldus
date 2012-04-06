@@ -101,6 +101,30 @@ namespace telldus_v8 {
         }
         return String::New("UNKNOWN");
     }
+
+    Local<Object> GetDeviceStatus(int id){
+        Local<Object> status = Object::New();
+        int lastSentCommand = tdLastSentCommand(id, SUPPORTED_METHODS);
+        char *level = 0;
+        switch(lastSentCommand) {
+            case TELLSTICK_TURNON:
+                status->Set(String::NewSymbol("name"), String::New("ON"));
+                break;
+            case TELLSTICK_TURNOFF:
+                status->Set(String::NewSymbol("name"), String::New("OFF"));
+                break;
+            case TELLSTICK_DIM:
+                status->Set(String::NewSymbol("name"), String::New("DIM"));
+                level = tdLastSentValue(id);
+                status->Set(String::NewSymbol("level"), String::New(level, strlen(level)));
+                tdReleaseString(level);
+                break;
+            default:
+                status->Set(String::NewSymbol("name"), String::New("Unknown"));
+        }
+
+        return status;
+    }
     
     Local<Object> GetDevice(int index){
 
@@ -114,6 +138,7 @@ namespace telldus_v8 {
         obj->Set(String::NewSymbol("metods"), GetSuportedMetods(id));
         obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
         obj->Set(String::NewSymbol("type"), GetDeviceType(id));
+        obj->Set(String::NewSymbol("status"), GetDeviceStatus(id));
 
         tdReleaseString(name);
         tdReleaseString(model);
