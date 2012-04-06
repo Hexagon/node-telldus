@@ -1,0 +1,11 @@
+{ "name" : "tellduscore"
+, "version" : "0.0.1"
+, "description" : "telldus-core binding to node"
+, "author": {
+       "name": "Marcus Olsson",
+       "email": "marcus.h.olsson@gmail.com",
+       "web": "http://www.slickstreamer.info",
+       "twitter": "_macke_"
+, "main": "./telldus"
+, "scripts": { "install": "node-waf configure build" }
+}
