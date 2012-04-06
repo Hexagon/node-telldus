@@ -23,10 +23,7 @@ def configure(conf):
   tc_libdir = '/Library/Frameworks/TelldusCore.framework/Versions/Current/'
   conf.env.append_value("LIBPATH_TC", tc_libdir)
   tc_includedir = '/Library/Frameworks/TelldusCore.framework/Versions/2.1.1/Headers/'
-  conf.env.append_value("CPPPATH_TC", tc_includedir)
-  #conf.env.append_value("LIB_TC", 'TelldusCore')
-  #conf.env.append_value("CFLAGS_TC", '-o TelldusCore')
-  
+  #conf.env.append_value("CPPPATH_TC", tc_includedir)
 
 
 def build(bld):
