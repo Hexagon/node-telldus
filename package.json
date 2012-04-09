@@ -7,6 +7,6 @@
        "web": "http://www.slickstreamer.info",
        "twitter": "_macke_"}
 , "license": "MIT"
-, "main": "./telldus"
+, "main": "./telldus.js"
 , "scripts": { "install": "node-waf configure build" }
 }
