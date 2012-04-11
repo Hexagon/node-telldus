@@ -1,11 +1,17 @@
 { "name" : "tellduscore"
-, "version" : "0.0.1"
-, "description" : "telldus-core binding to node"
+, "version" : "0.0.2"
+, "description" : "node wrapper for telldus-core"
+, "keywords": ["telldus", "telldus-core", "home automation"]
 , "author": {
        "name": "Marcus Olsson",
        "email": "marcus.h.olsson@gmail.com",
        "web": "http://www.slickstreamer.info",
        "twitter": "_macke_"}
+, "repository":{
+        "type": "git"
+      , "url": "https://github.com/evilmachina/node-telldus-core.git"
+    }
+, "engines": { "node": ">= 0.4.0" }
 , "license": "MIT"
 , "main": "./telldus.js"
 , "scripts": { "install": "node-waf configure build" }

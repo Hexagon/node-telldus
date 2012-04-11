@@ -161,16 +161,60 @@ namespace telldus_v8 {
         return scope.Close(devices);
     }
 
+    Handle<Value> turnOn( const Arguments& args ) {
+        HandleScope scope;
+        if (!args[0]->IsNumber()) {
+            ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+            return scope.Close(Undefined());
+        }
+        
+        Local<Number> num = Number::New(tdTurnOn(args[0]->NumberValue()));
+        return scope.Close(num);
+    }
+
+    Handle<Value> turnOff( const Arguments& args ) {
+        HandleScope scope;
+        if (!args[0]->IsNumber()) {
+            ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+            return scope.Close(Undefined());
+        }
+        
+        Local<Number> num = Number::New(tdTurnOff(args[0]->NumberValue()));
+        return scope.Close(num);
+    }  
+    
+    Handle<Value> dim( const Arguments& args ) {
+        HandleScope scope;
+        if (!args[0]->IsNumber()|| !args[1]->NumberValue()) {
+            ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+            return scope.Close(Undefined());
+        }
+        
+        Local<Number> num = Number::New(tdDim(args[0]->NumberValue(),(unsigned char)args[1]->NumberValue() ));
+        return scope.Close(num);
+    } 
+   /* Handle<Value> tdTurnOn(int intDeviceId);
+tdTurnOff(int intDeviceId);
+tdBell(int intDeviceId);
+tdDim(int intDeviceId, unsigned char level);
+    */
+
 }
 
 extern "C"
 void init(Handle<Object> target) {
     
     HandleScope scope;
-   target->Set(String::NewSymbol("getNumberOfDevices"),
+    target->Set(String::NewSymbol("getNumberOfDevices"),
       FunctionTemplate::New(telldus_v8::getNumberOfDevices)->GetFunction());
-   target->Set(String::NewSymbol("getDevices"),
+    target->Set(String::NewSymbol("getDevices"),
       FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
+    target->Set(String::NewSymbol("turnOn"),
+      FunctionTemplate::New(telldus_v8::turnOn)->GetFunction());
+    target->Set(String::NewSymbol("turnOff"),
+      FunctionTemplate::New(telldus_v8::turnOff)->GetFunction());
+    target->Set(String::NewSymbol("dim"),
+      FunctionTemplate::New(telldus_v8::dim)->GetFunction());
 }
 
 NODE_MODULE(telldus, init)
