@@ -19,6 +19,8 @@ def configure(conf):
   conf.env.append_value("FRAMEWORK_TC", tc_framework)
   tc_frameworkpath = '/Library/Frameworks/TelldusCore.framework/'
   conf.env.append_value("FRAMEWORKPATH_TC", tc_frameworkpath)
+  tc_lib = tc_frameworkpath + 'Headers/'
+  conf.env.append_value("CPPPATH_TC", tc_lib)
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
