@@ -1,7 +1,7 @@
 { "name" : "tellduscore"
 , "version" : "0.0.2"
 , "description" : "node wrapper for telldus-core"
-, "keywords": ["telldus", "telldus-core", "home automation"]
+, "keywords": ["telldus", "telldus-core","TellStick", "home automation"]
 , "author": {
        "name": "Marcus Olsson",
        "email": "marcus.h.olsson@gmail.com",

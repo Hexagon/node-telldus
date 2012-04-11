@@ -185,7 +185,7 @@ namespace telldus_v8 {
     
     Handle<Value> dim( const Arguments& args ) {
         HandleScope scope;
-        if (!args[0]->IsNumber()|| !args[1]->NumberValue()) {
+        if (!args[0]->IsNumber()|| !args[1]->IsNumber()) {
             ThrowException(Exception::TypeError(String::New("Wrong arguments")));
             return scope.Close(Undefined());
         }
