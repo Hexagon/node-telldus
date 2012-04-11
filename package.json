@@ -1,5 +1,5 @@
 { "name" : "tellduscore"
-, "version" : "0.0.2"
+, "version" : "0.0.3"
 , "description" : "node wrapper for telldus-core"
 , "keywords": ["telldus", "telldus-core","TellStick", "home automation"]
 , "author": {
