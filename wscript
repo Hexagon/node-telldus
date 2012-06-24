@@ -8,7 +8,7 @@ VERSION = '0.0.1'
 
 def set_options(opt):
   opt.tool_options('compiler_cxx')
-  opt.tool_options('osx')
+  #opt.tool_options('osx')
 
 def configure(conf):
   conf.check_tool('compiler_cxx')
