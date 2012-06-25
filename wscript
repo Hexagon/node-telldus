@@ -14,7 +14,7 @@ def configure(conf):
   conf.check_tool('node_addon')
   
   print(sys.platform)  
-  if sys.platform != 'linux2':
+  if sys.platform == 'darwin':
       conf.check_tool('osx')
       tc_framework = 'TelldusCore'
       conf.env.append_value("FRAMEWORK_TC", tc_framework)
@@ -22,12 +22,14 @@ def configure(conf):
       conf.env.append_value("FRAMEWORKPATH_TC", tc_frameworkpath)
       tc_lib = tc_frameworkpath + 'Headers/'
       conf.env.append_value("CPPPATH_TC", tc_lib)
-  else:
+  else if sys.platform == 'linux2':
       conf.env.LIB_TC = 'telldus-core'
       #conf.env.LIBPATH_TC = ['/usr/lib']
       #conf.env.CCFLAGS_TC = ['-O0']
       conf.env.CCDEFINES_TC = ['TC']
       #conf.env.LINKFLAGS_TC = ['-g']
+  else:
+      raise ValueError("Dose not support: " % sys.platform)
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
