@@ -4,7 +4,7 @@ from os.path import exists
 
 srcdir = '.'
 blddir = 'build'
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 def set_options(opt):
   opt.tool_options('compiler_cxx')
@@ -22,14 +22,14 @@ def configure(conf):
       conf.env.append_value("FRAMEWORKPATH_TC", tc_frameworkpath)
       tc_lib = tc_frameworkpath + 'Headers/'
       conf.env.append_value("CPPPATH_TC", tc_lib)
-  else if sys.platform == 'linux2':
+  elif sys.platform == 'linux2':
       conf.env.LIB_TC = 'telldus-core'
       #conf.env.LIBPATH_TC = ['/usr/lib']
       #conf.env.CCFLAGS_TC = ['-O0']
       conf.env.CCDEFINES_TC = ['TC']
       #conf.env.LINKFLAGS_TC = ['-g']
   else:
-      raise ValueError("Dose not support: " % sys.platform)
+      raise ValueError("Dose not support: %r" % sys.platform)
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')
