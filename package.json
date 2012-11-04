@@ -1,5 +1,5 @@
 { "name" : "telldus-core-js"
-, "version" : "0.0.4"
+, "version" : "0.0.5"
 , "description" : "node wrapper for telldus-core"
 , "keywords": ["telldus", "telldus-core","TellStick", "home automation"]
 , "homepage" : "http://www.slickstreamer.info"
