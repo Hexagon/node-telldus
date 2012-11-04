@@ -13,4 +13,8 @@
 , "main": "./telldus.js"
 , "scripts": { "install": "node-waf configure build" }
 , "os" : [ "darwin", "linux" ]
+, "devDependencies": { 
+        "mocha": "*"
+      , "should": "*"
+    }
 }

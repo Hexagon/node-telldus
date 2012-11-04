@@ -43,7 +43,7 @@ namespace telldus_v8 {
         return scope.Close(num);
     }
 
-    Local<Object> GetSuportedMetods(int id){
+    Local<Object> GetSuportedMethods(int id){
     
         int methods = tdMethods( id, SUPPORTED_METHODS );
         Local<Array> methodsObj = Array::New();
@@ -135,7 +135,7 @@ namespace telldus_v8 {
         Local<Object> obj = Object::New();
         obj->Set(String::NewSymbol("name"), String::New(name, strlen(name)));
         obj->Set(String::NewSymbol("id"), Number::New(id));
-        obj->Set(String::NewSymbol("metods"), GetSuportedMetods(id));
+        obj->Set(String::NewSymbol("methods"), GetSuportedMethods(id));
         obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
         obj->Set(String::NewSymbol("type"), GetDeviceType(id));
         obj->Set(String::NewSymbol("status"), GetDeviceStatus(id));
