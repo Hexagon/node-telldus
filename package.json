@@ -1,7 +1,7 @@
 { "name" : "telldus-core-js"
-, "version" : "0.0.5"
+, "version" : "0.0.6"
 , "description" : "node wrapper for telldus-core"
-, "keywords": ["telldus", "telldus-core","TellStick", "home automation"]
+, "keywords": ["telldus", "telldus-core", "TellStick", "home automation"]
 , "homepage" : "http://www.slickstreamer.info"
 , "author": "Marcus Olsson <marcus.h.olsson@gmail.com>"
 , "repository":{
@@ -11,7 +11,7 @@
 , "engines": { "node": ">= 0.6.14" }
 , "license": "MIT"
 , "main": "./telldus.js"
-, "scripts": { "install": "node-waf configure build" }
+, "scripts": { "install": "node-gyp configure build" }
 , "os" : [ "darwin", "linux" ]
 , "devDependencies": { 
         "mocha": "*"
