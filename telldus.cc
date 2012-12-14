@@ -15,24 +15,24 @@ using namespace std;
 
 namespace telldus_v8 {
 
-	struct Callback {
-    	Persistent<Function> func;
-	};
-
-	struct DeviceEventBatton {
-    	Callback *callback;
-    	int deviceId;
+    struct Callback {
+        Persistent<Function> func;
     };
 
-	struct SensorEventBatton {
-		Callback *callback;
-		int sensorId;
-		const char *model;
-		const char *protocol;
-		const char *value;
-		int ts;
-		int dataType;
-	};
+    struct DeviceEventBatton {
+        Callback *callback;
+        int deviceId;
+    };
+
+    struct SensorEventBatton {
+        Callback *callback;
+        int sensorId;
+        const char *model;
+        const char *protocol;
+        const char *value;
+        int ts;
+        int dataType;
+    };
 
     const int SUPPORTED_METHODS =
     TELLSTICK_TURNON
@@ -201,96 +201,96 @@ namespace telldus_v8 {
     }
 
     int DeviceEventCallbackAfter(eio_req *req) {
-		HandleScope scope;
-		DeviceEventBatton *batton = static_cast<DeviceEventBatton *>(req->data);
+        HandleScope scope;
+        DeviceEventBatton *batton = static_cast<DeviceEventBatton *>(req->data);
 
-		Local<Value> args[] = {
-			Number::New(batton->deviceId),
-			GetDeviceStatus(batton->deviceId),
-		};
+        Local<Value> args[] = {
+            Number::New(batton->deviceId),
+            GetDeviceStatus(batton->deviceId),
+        };
 
-		batton->callback->func->Call(batton->callback->func, 3, args);
-		scope.Close(Undefined());
+        batton->callback->func->Call(batton->callback->func, 3, args);
+        scope.Close(Undefined());
 
-		delete batton;
-		return 0;
-	}
+        delete batton;
+        return 0;
+    }
 
-	void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callback_void ) {
-		DeviceEventBatton *batton = new DeviceEventBatton();
-		batton->callback = static_cast<Callback *>(callback_void);
-		batton->deviceId = deviceId;
-		eio_nop(EIO_PRI_DEFAULT, DeviceEventCallbackAfter, batton);
-	}
+    void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callback_void ) {
+        DeviceEventBatton *batton = new DeviceEventBatton();
+        batton->callback = static_cast<Callback *>(callback_void);
+        batton->deviceId = deviceId;
+        eio_nop(EIO_PRI_DEFAULT, DeviceEventCallbackAfter, batton);
+    }
 
     Handle<Value> addDeviceEventListener( const Arguments& args ) {
-    	HandleScope scope;
-    	if (!args[0]->IsFunction()) {
-    		return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
-    	}
+        HandleScope scope;
+        if (!args[0]->IsFunction()) {
+            return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
+        }
 
-    	Callback *callback = new Callback();
-    	callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    	Local<Number> num = Number::New(tdRegisterDeviceEvent(&DeviceEventCallback, callback));
-    	return scope.Close(num);
+        Callback *callback = new Callback();
+        callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterDeviceEvent(&DeviceEventCallback, callback));
+        return scope.Close(num);
     }
 
     int SensorEventCallbackAfter(eio_req *req) {
-		HandleScope scope;
-		SensorEventBatton *batton = static_cast<SensorEventBatton *>(req->data);
+        HandleScope scope;
+        SensorEventBatton *batton = static_cast<SensorEventBatton *>(req->data);
 
-		Local<Value> args[] = {
-			Number::New(batton->sensorId),
-			String::New(batton->model),
-			String::New(batton->protocol),
-			Number::New(batton->dataType),
-			String::New(batton->value),
-		};
+        Local<Value> args[] = {
+            Number::New(batton->sensorId),
+            String::New(batton->model),
+            String::New(batton->protocol),
+            Number::New(batton->dataType),
+            String::New(batton->value),
+        };
 
-		batton->callback->func->Call(batton->callback->func, 5, args);
-		scope.Close(Undefined());
+        batton->callback->func->Call(batton->callback->func, 5, args);
+        scope.Close(Undefined());
 
-		delete batton;
-		return 0;
-	}
+        delete batton;
+        return 0;
+    }
 
-	void SensorEventCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value,
-			int ts, int callbackId, void *callback_void ) {
+    void SensorEventCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value,
+            int ts, int callbackId, void *callback_void ) {
 
-		SensorEventBatton *batton = new SensorEventBatton();
-		batton->callback = static_cast<Callback *>(callback_void);
-		batton->sensorId = sensorId;
-		batton->protocol = protocol;
-		batton->model = model;
-		batton->ts = ts;
-		batton->dataType = dataType;
-		batton->value = value;
+        SensorEventBatton *batton = new SensorEventBatton();
+        batton->callback = static_cast<Callback *>(callback_void);
+        batton->sensorId = sensorId;
+        batton->protocol = protocol;
+        batton->model = model;
+        batton->ts = ts;
+        batton->dataType = dataType;
+        batton->value = value;
 
-		eio_nop(EIO_PRI_DEFAULT, SensorEventCallbackAfter, batton);
-	}
+        eio_nop(EIO_PRI_DEFAULT, SensorEventCallbackAfter, batton);
+    }
 
     Handle<Value> addSensorEventListener( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsFunction()) {
-			return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
-		}
+        HandleScope scope;
+        if (!args[0]->IsFunction()) {
+            return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
+        }
 
-		Callback *callback = new Callback();
-		callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-		Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, callback));
-		return scope.Close(num);
-	}
+        Callback *callback = new Callback();
+        callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, callback));
+        return scope.Close(num);
+    }
 
     Handle<Value> removeEventListener( const Arguments &args ) {
-    	HandleScope scope;
-    	if (!args[0]->IsNumber()) {
-    		return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (int callbackId)")));
-    	}
-    	tdUnregisterCallback(args[0]->ToInteger()->Value());
+        HandleScope scope;
+        if (!args[0]->IsNumber()) {
+            return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (int callbackId)")));
+        }
+        tdUnregisterCallback(args[0]->ToInteger()->Value());
 
-    	//TODO: Fix leak of callback.
+        //TODO: Fix leak of callback.
 
-    	return scope.Close(Undefined());
+        return scope.Close(Undefined());
     }
 }
 
