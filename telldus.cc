@@ -34,6 +34,12 @@ namespace telldus_v8 {
         int dataType;
     };
 
+    struct RawDeviceEventBatton {
+    	Callback *callback;
+    	int controllerId;
+    	const char *data;
+    };
+
     const int SUPPORTED_METHODS =
     TELLSTICK_TURNON
     | TELLSTICK_TURNOFF
@@ -216,9 +222,9 @@ namespace telldus_v8 {
         return 0;
     }
 
-    void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callback_void ) {
+    void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callbackVoid ) {
         DeviceEventBatton *batton = new DeviceEventBatton();
-        batton->callback = static_cast<Callback *>(callback_void);
+        batton->callback = static_cast<Callback *>(callbackVoid);
         batton->deviceId = deviceId;
         eio_nop(EIO_PRI_DEFAULT, DeviceEventCallbackAfter, batton);
     }
@@ -255,10 +261,10 @@ namespace telldus_v8 {
     }
 
     void SensorEventCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value,
-            int ts, int callbackId, void *callback_void ) {
+            int ts, int callbackId, void *callbackVoid ) {
 
         SensorEventBatton *batton = new SensorEventBatton();
-        batton->callback = static_cast<Callback *>(callback_void);
+        batton->callback = static_cast<Callback *>(callbackVoid);
         batton->sensorId = sensorId;
         batton->protocol = protocol;
         batton->model = model;
@@ -280,6 +286,42 @@ namespace telldus_v8 {
         Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, callback));
         return scope.Close(num);
     }
+
+    int RawDataEventCallbackAfter(eio_req *req) {
+		HandleScope scope;
+		RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
+
+		Local<Value> args[] = {
+			Number::New(batton->controllerId),
+			String::New(batton->data),
+		};
+
+		batton->callback->func->Call(batton->callback->func, 5, args);
+		scope.Close(Undefined());
+
+		delete batton;
+		return 0;
+	}
+
+    void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
+    	RawDeviceEventBatton *batton = new RawDeviceEventBatton();
+    	batton->callback = static_cast<Callback *>(callbackVoid);
+    	batton->data = data;
+    	batton->controllerId = controllerId;
+    	eio_nop(EIO_PRI_DEFAULT, RawDataEventCallbackAfter, batton);
+    }
+
+    Handle<Value> addRawDeviceEventListener( const Arguments& args ) {
+		HandleScope scope;
+		if (!args[0]->IsFunction()) {
+			return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
+		}
+
+		Callback *callback = new Callback();
+		callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+		Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, callback));
+		return scope.Close(num);
+	}
 
     Handle<Value> removeEventListener( const Arguments &args ) {
         HandleScope scope;
@@ -312,6 +354,8 @@ void init(Handle<Object> target) {
       FunctionTemplate::New(telldus_v8::addDeviceEventListener)->GetFunction());
     target->Set(String::NewSymbol("addSensorEventListener"),
       FunctionTemplate::New(telldus_v8::addSensorEventListener)->GetFunction());
+    target->Set(String::NewSymbol("addRawDeviceEventListener"),
+      FunctionTemplate::New(telldus_v8::addRawDeviceEventListener)->GetFunction());
     target->Set(String::NewSymbol("removeEventListener"),
       FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
 }

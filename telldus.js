@@ -7,5 +7,6 @@ var tellduscore = require('./build/Release/telldus-core-js');
   exports.dim = function(id, levl) { return tellduscore.dim(id, levl); };
   exports.addDeviceEventListener = function(callback) { return tellduscore.addDeviceEventListener(callback); };
   exports.addSensorEventListener = function(callback) { return tellduscore.addSensorEventListener(callback); };
+  exports.addRawDeviceEventListener = function(callback) { return tellduscore.addRawDeviceEventListener(callback); };
   exports.removeEventListener = function(id) { return tellduscore.removeEventListener(id); };
 })('object' === typeof module ? module.exports : (this.telldus = {}), this);
