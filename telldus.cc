@@ -35,9 +35,9 @@ namespace telldus_v8 {
     };
 
     struct RawDeviceEventBatton {
-    	Callback *callback;
-    	int controllerId;
-    	const char *data;
+        Callback *callback;
+        int controllerId;
+        const char *data;
     };
 
     const int SUPPORTED_METHODS =
@@ -288,40 +288,40 @@ namespace telldus_v8 {
     }
 
     int RawDataEventCallbackAfter(eio_req *req) {
-		HandleScope scope;
-		RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
+        HandleScope scope;
+        RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
 
-		Local<Value> args[] = {
-			Number::New(batton->controllerId),
-			String::New(batton->data),
-		};
+        Local<Value> args[] = {
+            Number::New(batton->controllerId),
+            String::New(batton->data),
+        };
 
-		batton->callback->func->Call(batton->callback->func, 5, args);
-		scope.Close(Undefined());
+        batton->callback->func->Call(batton->callback->func, 5, args);
+        scope.Close(Undefined());
 
-		delete batton;
-		return 0;
-	}
+        delete batton;
+        return 0;
+    }
 
     void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
-    	RawDeviceEventBatton *batton = new RawDeviceEventBatton();
-    	batton->callback = static_cast<Callback *>(callbackVoid);
-    	batton->data = data;
-    	batton->controllerId = controllerId;
-    	eio_nop(EIO_PRI_DEFAULT, RawDataEventCallbackAfter, batton);
+        RawDeviceEventBatton *batton = new RawDeviceEventBatton();
+        batton->callback = static_cast<Callback *>(callbackVoid);
+        batton->data = data;
+        batton->controllerId = controllerId;
+        eio_nop(EIO_PRI_DEFAULT, RawDataEventCallbackAfter, batton);
     }
 
     Handle<Value> addRawDeviceEventListener( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsFunction()) {
-			return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
-		}
+        HandleScope scope;
+        if (!args[0]->IsFunction()) {
+            return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
+        }
 
-		Callback *callback = new Callback();
-		callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-		Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, callback));
-		return scope.Close(num);
-	}
+        Callback *callback = new Callback();
+        callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, callback));
+        return scope.Close(num);
+    }
 
     Handle<Value> removeEventListener( const Arguments &args ) {
         HandleScope scope;
