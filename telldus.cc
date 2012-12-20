@@ -15,17 +15,13 @@ using namespace std;
 
 namespace telldus_v8 {
 
-    struct Callback {
-        Persistent<Function> func;
-    };
-
     struct DeviceEventBatton {
-        Callback *callback;
+        Persistent<Function> callback;
         int deviceId;
     };
 
     struct SensorEventBatton {
-        Callback *callback;
+        Persistent<Function> callback;
         int sensorId;
         const char *model;
         const char *protocol;
@@ -35,7 +31,7 @@ namespace telldus_v8 {
     };
 
     struct RawDeviceEventBatton {
-        Callback *callback;
+        Persistent<Function> callback;
         int controllerId;
         const char *data;
     };
@@ -215,7 +211,7 @@ namespace telldus_v8 {
             GetDeviceStatus(batton->deviceId),
         };
 
-        batton->callback->func->Call(batton->callback->func, 3, args);
+        batton->callback->Call(batton->callback, 3, args);
         scope.Close(Undefined());
 
         delete batton;
@@ -224,7 +220,7 @@ namespace telldus_v8 {
 
     void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callbackVoid ) {
         DeviceEventBatton *batton = new DeviceEventBatton();
-        batton->callback = static_cast<Callback *>(callbackVoid);
+        batton->callback = static_cast<Function *>(callbackVoid);
         batton->deviceId = deviceId;
         eio_nop(EIO_PRI_DEFAULT, DeviceEventCallbackAfter, batton);
     }
@@ -235,9 +231,8 @@ namespace telldus_v8 {
             return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
         }
 
-        Callback *callback = new Callback();
-        callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-        Local<Number> num = Number::New(tdRegisterDeviceEvent(&DeviceEventCallback, callback));
+        Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterDeviceEvent(&DeviceEventCallback, *callback));
         return scope.Close(num);
     }
 
@@ -251,9 +246,10 @@ namespace telldus_v8 {
             String::New(batton->protocol),
             Number::New(batton->dataType),
             String::New(batton->value),
+            Number::New(batton->ts)
         };
 
-        batton->callback->func->Call(batton->callback->func, 5, args);
+        batton->callback->Call(batton->callback, 6, args);
         scope.Close(Undefined());
 
         delete batton;
@@ -264,7 +260,7 @@ namespace telldus_v8 {
             int ts, int callbackId, void *callbackVoid ) {
 
         SensorEventBatton *batton = new SensorEventBatton();
-        batton->callback = static_cast<Callback *>(callbackVoid);
+        batton->callback = static_cast<Function *>(callbackVoid);
         batton->sensorId = sensorId;
         batton->protocol = protocol;
         batton->model = model;
@@ -281,9 +277,8 @@ namespace telldus_v8 {
             return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
         }
 
-        Callback *callback = new Callback();
-        callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-        Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, callback));
+        Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, *callback));
         return scope.Close(num);
     }
 
@@ -296,7 +291,7 @@ namespace telldus_v8 {
             String::New(batton->data),
         };
 
-        batton->callback->func->Call(batton->callback->func, 5, args);
+        batton->callback->Call(batton->callback, 5, args);
         scope.Close(Undefined());
 
         delete batton;
@@ -305,7 +300,7 @@ namespace telldus_v8 {
 
     void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
         RawDeviceEventBatton *batton = new RawDeviceEventBatton();
-        batton->callback = static_cast<Callback *>(callbackVoid);
+        batton->callback = static_cast<Function *>(callbackVoid);
         batton->data = data;
         batton->controllerId = controllerId;
         eio_nop(EIO_PRI_DEFAULT, RawDataEventCallbackAfter, batton);
@@ -317,9 +312,8 @@ namespace telldus_v8 {
             return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
         }
 
-        Callback *callback = new Callback();
-        callback->func = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-        Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, callback));
+        Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, *callback));
         return scope.Close(num);
     }
 
@@ -330,7 +324,7 @@ namespace telldus_v8 {
         }
         tdUnregisterCallback(args[0]->ToInteger()->Value());
 
-        //TODO: Fix leak of callback.
+        //FIXME: Fix leak of callback.
 
         return scope.Close(Undefined());
     }
