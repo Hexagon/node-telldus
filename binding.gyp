@@ -13,14 +13,13 @@
             ]
         }],
         ['OS=="linux"', {
-            'defines': [
-                'LIB_TC=telldus-core',
-                'CCDEFINES_TC=TC'
-            ]
+        	'link_settings': {
+         		'libraries': [
+         			'-ltelldus-core',
+         		]
+        	}
         }]
-    ],
-    'libraries': [
-    ],
+      ]
    }
   ]
 }
