@@ -1,7 +1,4 @@
-#ifndef BUILDING_NODE_EXTENSION
 #define BUILDING_NODE_EXTENSION
-#endif
-
 #include <node.h>
 #include <v8.h>
 #include <unistd.h>
@@ -204,7 +201,31 @@ namespace telldus_v8 {
         Local<Number> num = Number::New(tdDim(args[0]->NumberValue(),(unsigned char)args[1]->NumberValue() ));
         return scope.Close(num);
     }
-
+    
+	Handle<Value> addDevice( const Arguments& args ) {
+        HandleScope scope;
+        Local<Number> num = Number::New(tdAddDevice());
+        return scope.Close(num);
+    }
+	
+	Handle<Value> removeDevice( const Arguments& args ) {
+        HandleScope scope;
+		if (!args[0]->IsNumber()) {
+            return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+        }
+        Local<Number> num = Number::New(tdRemoveDevice(args[0]->NumberValue()));
+        return scope.Close(num);
+    }
+	
+	Handle<Value> getErrorString( const Arguments& args ) {
+        HandleScope scope;
+		if (!args[0]->IsNumber()) {
+            return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+        }
+        Local<String> str = String::New(tdGetErrorString(args[0]->NumberValue()));
+        return scope.Close(str);
+    }
+	
     int DeviceEventCallbackAfter(eio_req *req) {
         HandleScope scope;
         DeviceEventBatton *batton = static_cast<DeviceEventBatton *>(req->data);
@@ -294,7 +315,7 @@ namespace telldus_v8 {
             String::New(batton->data),
         };
 
-        batton->callback->Call(batton->callback, 5, args);
+        batton->callback->Call(batton->callback, 3, args);
         scope.Close(Undefined());
 
         delete batton;
@@ -355,6 +376,13 @@ void init(Handle<Object> target) {
       FunctionTemplate::New(telldus_v8::addRawDeviceEventListener)->GetFunction());
     target->Set(String::NewSymbol("removeEventListener"),
       FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
+	target->Set(String::NewSymbol("addDevice"),
+      FunctionTemplate::New(telldus_v8::addDevice)->GetFunction());
+	target->Set(String::NewSymbol("removeDevice"),
+      FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
+	target->Set(String::NewSymbol("getErrorString"),
+      FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
+	  
 }
 
 NODE_MODULE(telldus, init)
