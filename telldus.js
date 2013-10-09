@@ -8,6 +8,7 @@ var tellduscore = require('./build/Release/telldus-core-js');
   exports.setProtocol = function(id, protocol) { return tellduscore.setProtocol(id, protocol); };
   exports.setModel = function(id, model) { return tellduscore.setModel(id, model); };
   exports.setDeviceParameter = function(id, name, val) { return tellduscore.setDeviceParameter(id, name, val); };
+  exports.getDeviceParameter = function(id, name, val) { return tellduscore.getDeviceParameter(id, name, val); };
   exports.removeDevice = function(id) { return tellduscore.removeDevice(id); };
   
   exports.turnOn = function(id) { return tellduscore.turnOn(id); };

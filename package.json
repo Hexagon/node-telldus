@@ -1,6 +1,6 @@
 {
   "name": "telldus-core-js",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "node wrapper for telldus-core",
   "keywords": [
     "telldus",
@@ -33,7 +33,7 @@
     "mocha": "*",
     "should": "*"
   },
-  "_id": "telldus-core-js@0.0.6",
+  "_id": "telldus-core-js@0.0.7",
   "dependencies": {},
   "optionalDependencies": {},
   "_engineSupported": true,

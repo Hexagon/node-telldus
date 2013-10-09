@@ -266,6 +266,23 @@ namespace telldus_v8 {
         return scope.Close(num);
     }
 	
+	Handle<Value> getDeviceParameter( const Arguments& args ) {
+        HandleScope scope;
+        if (!args[0]->IsNumber() || !args[1]->IsString() || !args[2]->IsString()) {
+            return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+        }
+		
+		v8::String::Utf8Value str1(args[1]);
+		const char* cstr1 = ToCString(str1);
+		
+		v8::String::Utf8Value str2(args[2]);
+		const char* cstr2 = ToCString(str2);
+		
+        //Local<Number> num = Number::New(tdGetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
+		Local<String> str = String::New(tdGetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
+        return scope.Close(str);
+    }
+	
 	Handle<Value> setDeviceParameter( const Arguments& args ) {
         HandleScope scope;
         if (!args[0]->IsNumber() || !args[1]->IsString() || !args[2]->IsString()) {
@@ -461,6 +478,8 @@ void init(Handle<Object> target) {
       FunctionTemplate::New(telldus_v8::setProtocol)->GetFunction());
 	target->Set(String::NewSymbol("setModel"),
       FunctionTemplate::New(telldus_v8::setModel)->GetFunction());
+	target->Set(String::NewSymbol("getDeviceParameter"),
+      FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
 	target->Set(String::NewSymbol("setDeviceParameter"),
       FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());
 	  
