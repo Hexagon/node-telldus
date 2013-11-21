@@ -1,4 +1,4 @@
-var tellduscore = require('./build/Release/telldus-core-js');
+var telldus = require('./build/Release/telldus');
 
 (function (exports, global) {
   exports.getDevices = function() { return tellduscore.getDevices(); };

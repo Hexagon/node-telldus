@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-    "target_name": "telldus-core-js",
+    "target_name": "telldus",
     "sources": [ "telldus.cc" ],
     "conditions": [
         ['OS=="mac"', {
