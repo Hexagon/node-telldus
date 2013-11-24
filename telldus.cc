@@ -129,7 +129,7 @@ namespace telldus_v8 {
                 status->Set(String::NewSymbol("status"), String::New("OFF"));
                 break;
             case TELLSTICK_DIM:
-                status->Set(String::NewSymbol("status"), String::New("DIM"));
+               status->Set(String::NewSymbol("status"), String::New("DIM"));
                 level = tdLastSentValue(id);
                 status->Set(String::NewSymbol("level"), String::New(level, strlen(level)));
                 tdReleaseString(level);
@@ -205,10 +205,34 @@ namespace telldus_v8 {
         return scope.Close(num);
     }
 
+    void DeviceEventCallbackAfter(uv_work_t *req) {
+        // Space for work ...
+    }
+
+    void DeviceEventCallbackAfterAfter(uv_work_t *req, int status) {
+        HandleScope scope;
+        DeviceEventBatton *batton = static_cast<DeviceEventBatton *>(req->data);
+
+        Local<Value> args[] = {
+            Number::New(batton->deviceId),
+            GetDeviceStatus(batton->deviceId),
+        };
+        batton->callback->Call(batton->callback, 3, args);
+        scope.Close(Undefined());
+
+        delete batton;
+        delete req;
+    }
+
     void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callbackVoid ) {
         DeviceEventBatton *batton = new DeviceEventBatton();
         batton->callback = static_cast<Function *>(callbackVoid);
         batton->deviceId = deviceId;
+
+        uv_work_t* req = new uv_work_t;
+        req->data = batton;
+        uv_queue_work(uv_default_loop(), req, (uv_work_cb)DeviceEventCallbackAfter, (uv_after_work_cb)DeviceEventCallbackAfterAfter);
+
     }
 
     Handle<Value> addDeviceEventListener( const Arguments& args ) {
@@ -220,6 +244,30 @@ namespace telldus_v8 {
         Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
         Local<Number> num = Number::New(tdRegisterDeviceEvent(&DeviceEventCallback, *callback));
         return scope.Close(num);
+    }
+
+    void SensorEventCallbackAfter(uv_work_t *req) {
+        // Space for work ...
+    }
+
+    void SensorEventCallbackAfterAfter(uv_work_t *req, int status) {
+        HandleScope scope;
+        SensorEventBatton *batton = static_cast<SensorEventBatton *>(req->data);
+
+        Local<Value> args[] = {
+            Number::New(batton->sensorId),
+            String::New(batton->model),
+            String::New(batton->protocol),
+            Number::New(batton->dataType),
+            String::New(batton->value),
+            Number::New(batton->ts)
+        };
+
+        batton->callback->Call(batton->callback, 6, args);
+        scope.Close(Undefined());
+
+        delete batton;
+        delete req;
     }
 
     void SensorEventCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value,
@@ -234,6 +282,9 @@ namespace telldus_v8 {
         batton->dataType = dataType;
         batton->value = value;
 
+        uv_work_t* req = new uv_work_t;
+        req->data = batton;
+        uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackAfter, (uv_after_work_cb)SensorEventCallbackAfterAfter);
     }
 
     Handle<Value> addSensorEventListener( const Arguments& args ) {
