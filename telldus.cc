@@ -205,11 +205,11 @@ namespace telldus_v8 {
         return scope.Close(num);
     }
 
-    void DeviceEventCallbackAfter(uv_work_t *req) {
+    void DeviceEventCallbackWorking(uv_work_t *req) {
         // Space for work ...
     }
 
-    void DeviceEventCallbackAfterAfter(uv_work_t *req, int status) {
+    void DeviceEventCallbackAfter(uv_work_t *req, int status) {
         HandleScope scope;
         DeviceEventBatton *batton = static_cast<DeviceEventBatton *>(req->data);
 
@@ -231,7 +231,7 @@ namespace telldus_v8 {
 
         uv_work_t* req = new uv_work_t;
         req->data = batton;
-        uv_queue_work(uv_default_loop(), req, (uv_work_cb)DeviceEventCallbackAfter, (uv_after_work_cb)DeviceEventCallbackAfterAfter);
+        uv_queue_work(uv_default_loop(), req, (uv_work_cb)DeviceEventCallbackWorking, (uv_after_work_cb)DeviceEventCallbackAfter);
 
     }
 
@@ -246,11 +246,11 @@ namespace telldus_v8 {
         return scope.Close(num);
     }
 
-    void SensorEventCallbackAfter(uv_work_t *req) {
+    void SensorEventCallbackWorking(uv_work_t *req) {
         // Space for work ...
     }
 
-    void SensorEventCallbackAfterAfter(uv_work_t *req, int status) {
+    void SensorEventCallbackAfter(uv_work_t *req, int status) {
         HandleScope scope;
         SensorEventBatton *batton = static_cast<SensorEventBatton *>(req->data);
 
@@ -284,7 +284,7 @@ namespace telldus_v8 {
 
         uv_work_t* req = new uv_work_t;
         req->data = batton;
-        uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackAfter, (uv_after_work_cb)SensorEventCallbackAfterAfter);
+        uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackWorking, (uv_after_work_cb)SensorEventCallbackAfter);
     }
 
     Handle<Value> addSensorEventListener( const Arguments& args ) {
