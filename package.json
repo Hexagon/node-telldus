@@ -1,16 +1,15 @@
-{ "name" : "telldus-core-js"
-, "version" : "0.0.6"
-, "description" : "node wrapper for telldus-core"
+{ "name" : "node-tellstick"
+, "version" : "0.0.1"
+, "description" : "node wrapper for telldus-core, based on telldus-core-js"
 , "keywords": ["telldus", "telldus-core", "TellStick", "home automation"]
-, "homepage" : "http://www.slickstreamer.info"
-, "author": "Marcus Olsson <marcus.h.olsson@gmail.com>"
+, "author": "Robin Nilsson <robinnilsson@gmail.com>"
 , "repository":{
         "type": "git"
-      , "url": "git://github.com/evilmachina/telldus-core-js.git"
+      , "url": "git://github.com/Hexagon/node-tellstick.git"
     }
-, "engines": { "node": ">= 0.6.14" }
+, "engines": { "node": ">= 0.10.0" }
 , "license": "MIT"
-, "main": "./telldus.js"
+, "main": "./tellstick.js"
 , "scripts": { "install": "node-gyp configure build" }
 , "os" : [ "darwin", "linux" ]
 , "devDependencies": { 
