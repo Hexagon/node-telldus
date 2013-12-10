@@ -1,4 +1,4 @@
-node-telldus - Node bindings for telldus-core
+telldus - Node bindings for telldus-core
 
 === 
 Installation:
