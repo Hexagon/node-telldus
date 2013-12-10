@@ -432,7 +432,11 @@ namespace telldus_v8 {
         uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackWorking, (uv_after_work_cb)SensorEventCallbackAfter);
     }
 
-	int RawDataEventCallbackAfter(eio_req *req) {
+    void RawDataEventCallbackWorking(uv_work_t *req) {
+        // Space for work ...
+    }
+
+	int RawDataEventCallbackAfter(uv_work_t *req, int status) {
 		HandleScope scope;
 		RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
 
@@ -445,7 +449,7 @@ namespace telldus_v8 {
 		scope.Close(Undefined());
 
 		delete batton;
-		return 0;
+		delete req;
 	}
 
 	void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
@@ -453,8 +457,12 @@ namespace telldus_v8 {
 		batton->callback = static_cast<Function *>(callbackVoid);
 		batton->data = data;
 		batton->controllerId = controllerId;
-		eio_nop(EIO_PRI_DEFAULT, RawDataEventCallbackAfter, batton);
+
+		uv_work_t* req = new uv_work_t;
+        req->data = batton;
+		uv_queue_work(uv_default_loop(), req, (uv_work_cb)RawDataEventCallbackWorking, (uv_after_work_cb)RawDataEventCallbackAfter);
 	}
+
 
 	Handle<Value> addRawDeviceEventListener( const Arguments& args ) {
 		HandleScope scope;
@@ -487,6 +495,7 @@ namespace telldus_v8 {
 		size_t v;
 		size_t devID;
 	};
+
 	void run_work(uv_work_t* req) {
 		js_work* work = static_cast<js_work*>(req->data);
 		switch(work->f) {
@@ -502,7 +511,9 @@ namespace telldus_v8 {
 		}
 		//work->data = "foobar12";
 	}
+
 	void run_callback(uv_work_t* req, int status) {
+		
 		HandleScope scope;
 
 		js_work* work = static_cast<js_work*>(req->data);
@@ -520,6 +531,7 @@ namespace telldus_v8 {
 		
 		//delete[] data;
 		delete work;
+
 	}
 	
 	/* the JS entry point */
