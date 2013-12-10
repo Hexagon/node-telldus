@@ -1,4 +1,4 @@
-Node bindings for telldus-core
+node-telldus - Node bindings for telldus-core
 
 === 
 Installation:
@@ -8,7 +8,7 @@ Installation:
 	* Linux Ubuntu/Debian: http://developer.telldus.com/wiki/TellStickInstallationUbuntu
 	* Linux source install: http://developer.telldus.com/wiki/TellStickInstallationSource
 2. Compile this module ```npm install```
-3. Link the module to your project ```cd yourprojectdirectory``` ```npm link node-tellstick```
+3. Link the module to your project ```cd yourprojectdirectory``` ```npm link telldus```
 
 License and Credits:
 

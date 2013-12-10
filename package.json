@@ -1,11 +1,11 @@
-{ "name" : "node-tellstick"
+{ "name" : "telldus"
 , "version" : "0.0.1"
 , "description" : "node wrapper for telldus-core, based on telldus-core-js"
 , "keywords": ["telldus", "telldus-core", "TellStick", "home automation"]
 , "author": "Robin Nilsson <robinnilsson@gmail.com>"
 , "repository":{
         "type": "git"
-      , "url": "git://github.com/Hexagon/node-tellstick.git"
+      , "url": "git://github.com/Hexagon/node-telldus.git"
     }
 , "engines": { "node": ">= 0.10.0" }
 , "license": "MIT"
