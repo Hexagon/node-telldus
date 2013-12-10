@@ -1,4 +1,7 @@
-#define BUILDING_NODE_EXTENSION
+#ifndef BUILDING_NODE_EXTENSION
+	#define BUILDING_NODE_EXTENSION
+#endif // BUILDING_NODE_EXTENSION
+
 #include <node.h>
 #include <v8.h>
 #include <node_buffer.h>
@@ -432,11 +435,22 @@ namespace telldus_v8 {
         uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackWorking, (uv_after_work_cb)SensorEventCallbackAfter);
     }
 
+    Handle<Value> addSensorEventListener( const Arguments& args ) {
+        HandleScope scope;
+        if (!args[0]->IsFunction()) {
+            return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
+        }
+
+        Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+        Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, *callback));
+        return scope.Close(num);
+    }
+
     void RawDataEventCallbackWorking(uv_work_t *req) {
         // Space for work ...
     }
 
-	int RawDataEventCallbackAfter(uv_work_t *req, int status) {
+	void RawDataEventCallbackAfter(uv_work_t *req, int status) {
 		HandleScope scope;
 		RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
 
