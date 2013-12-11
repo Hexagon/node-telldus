@@ -34,7 +34,7 @@ Installation (From npm):
 Make sure telldusd is running on the same machine.
 
 ```javascript
-var tellduscore = require('telldus-core-js');
+var tellduscore = require('telldus');
 var devices = tellduscore.getDevices();
 ```
 
@@ -127,11 +127,11 @@ This is usefull for scanning for devices not yet configured
 Signature:
 
 ```javascript
-var listener = tellduscore.addRawDeviceEventListener(function(arg1, values, arg3, arg4, arg5) {});
+var listener = tellduscore.addRawDeviceEventListener(function(controllerId, data) {});
 ```
 
-* `arg1`, `arg3`, `arg4`, `arg5`: TODO
-* `values`: A semicolon separated string with colon separated key / value pairs.
+* `controllerId`: id of receiving controller, can identify the TellStick if several exists in the system.
+* `data`: A semicolon separated string with colon separated key / value pairs.
 
 ```javascript
 'class:command;protocol:arctech;model:selflearning;house:5804222;unit:2;group:0;method:turnon;'
