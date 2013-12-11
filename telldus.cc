@@ -365,7 +365,7 @@ namespace telldus_v8 {
             Number::New(batton->deviceId),
             GetDeviceStatus(batton->deviceId),
         };
-        batton->callback->Call(batton->callback, 3, args);
+        batton->callback->Call(batton->callback, 2, args);
         scope.Close(Undefined());
 
         delete batton;
@@ -451,6 +451,7 @@ namespace telldus_v8 {
     }
 
 	void RawDataEventCallbackAfter(uv_work_t *req, int status) {
+		
 		HandleScope scope;
 		RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
 
@@ -459,7 +460,7 @@ namespace telldus_v8 {
 			String::New(batton->data),
 		};
 
-		batton->callback->Call(batton->callback, 3, args);
+		batton->callback->Call(batton->callback, 2, args);
 		scope.Close(Undefined());
 
 		delete batton;
