@@ -10,7 +10,10 @@
 , "engines": { "node": ">= 0.10.0" }
 , "license": "MIT"
 , "main": "./telldus.js"
-, "scripts": { "install": "node-gyp configure build" }
+, "scripts": { 
+    "install": "node-gyp configure build",
+    "test": "mocha --reporter spec"
+    }
 , "os" : [ "darwin", "linux" ]
 , "devDependencies": { 
         "mocha": "*"
