@@ -18,8 +18,15 @@
          			'-ltelldus-core',
          		]
         	}
+        }],
+        ['OS == "win"', {
+          'link_settings': {
+            'libraries': [
+              '-ltelldus-core',
+            ]
+          }
         }]
       ]
-   }
+    }
   ]
 }
