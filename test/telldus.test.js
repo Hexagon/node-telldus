@@ -122,7 +122,7 @@ describe("telldus library should", function () {
      */
     it("using rawDeviceEventListener", function (done) {
       var seconds = 5; //for how many seconds should we wait for an event
-      console.log("\nWaiting", seconds, "seconds for some raw events.\nPlease trigger a remote.");
+      console.log("\nWaiting", seconds, "seconds for some raw events.\nPlease trigger something.");
       var received = [];
       this.timeout(seconds*1000+1000); //increase the test timeout
       
@@ -152,7 +152,7 @@ describe("telldus library should", function () {
       
       setTimeout(function () {
         telldus.removeEventListener(listener); //remove the listener
-        received.length.should.be.within(1, SOME_REALLY_BIG_NUMBER); //we should have gotten at least 1 event.
+        received.length.should.be.above(1); //we should have gotten at least 1 event. Likely more
         done(); //consider the test done
       },seconds*1000);
     
@@ -160,22 +160,32 @@ describe("telldus library should", function () {
 
 
     it("deviceEventListener", function (done) {
-      var seconds = 5; // for how many seconds should we wait for an aevent
+      var seconds = 2; // for how many seconds should we wait for an aevent
       this.timeout(seconds * 1000 + 1000);
-            console.log("\nWaiting", seconds, "seconds for some device events.\nPlease trigger a remote.");
+            
       var count = 0;
       
-      var listener = telldus.addDeviceEventListener( function (device, status) {
-        device.should.be.within(1, SOME_REALLY_BIG_NUMBER);
-        status.should.have.property('status'); 
+      //listen and wait for something
+      var listener = telldus.addDeviceEventListener( function (deviceId, evt) {
+        if(typeof process.env['VERBOSE'] !== 'undefined' ){
+          console.log("device:%s, event:%j", deviceId, evt);
+        }
+        deviceId.should.be.above(0);
+        evt.should.have.property('status', 'ON'); 
         count++;
       });
+      
+      listener.should.be.above(0);
+
+      //send a device event
+      telldus.turnOn(1);
+
       setTimeout(function () {
         telldus.removeEventListener(listener);
-        //we should have at least 1 event
-        count.should.be.within(1, SOME_REALLY_BIG_NUMBER);
+        //we should have 1 event
+        count.should.be.equal(1);
         done(); //consider the test done
       },seconds * 1000);
-    });
+    });//deviceEventListener
   });//describe events
 });
