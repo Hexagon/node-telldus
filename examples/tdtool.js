@@ -6,7 +6,7 @@ var DEVICE_PARAM=3
 var CMD_PARAM=2;
 
 
-
+// FixMe: Asyncify
 
 
 function syntax(){

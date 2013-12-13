@@ -26,12 +26,12 @@ const char* ToCString(const v8::String::Utf8Value& value) {
 
 namespace telldus_v8 {
 
-	struct DeviceEventBatton {
+	struct DeviceEventBaton {
 		Persistent<Function> callback;
 		int deviceId;
 	};
 
-	struct SensorEventBatton {
+	struct SensorEventBaton {
 		Persistent<Function> callback;
 		int sensorId;
 		const char *model;
@@ -41,7 +41,7 @@ namespace telldus_v8 {
 		int dataType;
 	};
 
-	struct RawDeviceEventBatton {
+	struct RawDeviceEventBaton {
 		Persistent<Function> callback;
 		int controllerId;
 		const char *data;
@@ -183,7 +183,6 @@ namespace telldus_v8 {
 		for (int i = 0; i < intNumberOfDevices; i++) {
 		   devices->Set(i, GetDevice(i));
 		 }
-
 		return scope.Close(devices);
 	}
 
@@ -216,33 +215,31 @@ namespace telldus_v8 {
 		Local<Number> num = Number::New(tdDim(args[0]->NumberValue(),(unsigned char)args[1]->NumberValue() ));
 		return scope.Close(num);
 	}
-	
+
 	Handle<Value> learn( const Arguments& args ) {
 		HandleScope scope;
 		if (!args[0]->IsNumber()) {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
-
 		Local<Number> num = Number::New(tdLearn(args[0]->NumberValue()));
 		return scope.Close(num);
 	}
-	
+
 	Handle<Value> addDevice( const Arguments& args ) {
 		HandleScope scope;
 		Local<Number> num = Number::New(tdAddDevice());
 		return scope.Close(num);
 	}
-	
+
 	Handle<Value> getName( const Arguments& args ) {
 		HandleScope scope;
 		if (!args[0]->IsNumber()) {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
-
 		Local<String> str = String::New(tdGetName(args[0]->NumberValue()));
 		return scope.Close(str);
 	}
-	
+
 	Handle<Value> setName( const Arguments& args ) {
 		HandleScope scope;
 		if (!args[0]->IsNumber()|| !args[1]->IsString()) {
@@ -359,26 +356,26 @@ namespace telldus_v8 {
 
     void DeviceEventCallbackAfter(uv_work_t *req, int status) {
         HandleScope scope;
-        DeviceEventBatton *batton = static_cast<DeviceEventBatton *>(req->data);
+        DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(req->data);
 
         Local<Value> args[] = {
-            Number::New(batton->deviceId),
-            GetDeviceStatus(batton->deviceId),
+            Number::New(baton->deviceId),
+            GetDeviceStatus(baton->deviceId),
         };
-        batton->callback->Call(batton->callback, 2, args);
+        baton->callback->Call(baton->callback, 2, args);
         scope.Close(Undefined());
 
-        delete batton;
+        delete baton;
         delete req;
     }
 
     void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callbackVoid ) {
-        DeviceEventBatton *batton = new DeviceEventBatton();
-        batton->callback = static_cast<Function *>(callbackVoid);
-        batton->deviceId = deviceId;
+        DeviceEventBaton *baton = new DeviceEventBaton();
+        baton->callback = static_cast<Function *>(callbackVoid);
+        baton->deviceId = deviceId;
 
         uv_work_t* req = new uv_work_t;
-        req->data = batton;
+        req->data = baton;
         uv_queue_work(uv_default_loop(), req, (uv_work_cb)DeviceEventCallbackWorking, (uv_after_work_cb)DeviceEventCallbackAfter);
 
     }
@@ -400,38 +397,38 @@ namespace telldus_v8 {
 
     void SensorEventCallbackAfter(uv_work_t *req, int status) {
         HandleScope scope;
-        SensorEventBatton *batton = static_cast<SensorEventBatton *>(req->data);
+        SensorEventBaton *baton = static_cast<SensorEventBaton *>(req->data);
 
         Local<Value> args[] = {
-            Number::New(batton->sensorId),
-            String::New(batton->model),
-            String::New(batton->protocol),
-            Number::New(batton->dataType),
-            String::New(batton->value),
-            Number::New(batton->ts)
+            Number::New(baton->sensorId),
+            String::New(baton->model),
+            String::New(baton->protocol),
+            Number::New(baton->dataType),
+            String::New(baton->value),
+            Number::New(baton->ts)
         };
 
-        batton->callback->Call(batton->callback, 6, args);
+        baton->callback->Call(baton->callback, 6, args);
         scope.Close(Undefined());
 
-        delete batton;
+        delete baton;
         delete req;
     }
 
     void SensorEventCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value,
             int ts, int callbackId, void *callbackVoid ) {
 
-        SensorEventBatton *batton = new SensorEventBatton();
-        batton->callback = static_cast<Function *>(callbackVoid);
-        batton->sensorId = sensorId;
-        batton->protocol = protocol;
-        batton->model = model;
-        batton->ts = ts;
-        batton->dataType = dataType;
-        batton->value = value;
+        SensorEventBaton *baton = new SensorEventBaton();
+        baton->callback = static_cast<Function *>(callbackVoid);
+        baton->sensorId = sensorId;
+        baton->protocol = protocol;
+        baton->model = model;
+        baton->ts = ts;
+        baton->dataType = dataType;
+        baton->value = value;
 
         uv_work_t* req = new uv_work_t;
-        req->data = batton;
+        req->data = baton;
         uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackWorking, (uv_after_work_cb)SensorEventCallbackAfter);
     }
 
@@ -451,30 +448,30 @@ namespace telldus_v8 {
     }
 
 	void RawDataEventCallbackAfter(uv_work_t *req, int status) {
-		
+
 		HandleScope scope;
-		RawDeviceEventBatton *batton = static_cast<RawDeviceEventBatton *>(req->data);
+		RawDeviceEventBaton *baton = static_cast<RawDeviceEventBaton *>(req->data);
 
 		Local<Value> args[] = {
-			Number::New(batton->controllerId),
-			String::New(batton->data),
+			Number::New(baton->controllerId),
+			String::New(baton->data),
 		};
 
-		batton->callback->Call(batton->callback, 2, args);
+		baton->callback->Call(baton->callback, 2, args);
 		scope.Close(Undefined());
 
-		delete batton;
+		delete baton;
 		delete req;
 	}
 
 	void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
-		RawDeviceEventBatton *batton = new RawDeviceEventBatton();
-		batton->callback = static_cast<Function *>(callbackVoid);
-		batton->data = data;
-		batton->controllerId = controllerId;
+		RawDeviceEventBaton *baton = new RawDeviceEventBaton();
+		baton->callback = static_cast<Function *>(callbackVoid);
+		baton->data = data;
+		baton->controllerId = controllerId;
 
 		uv_work_t* req = new uv_work_t;
-        req->data = batton;
+        	req->data = baton;
 		uv_queue_work(uv_default_loop(), req, (uv_work_cb)RawDataEventCallbackWorking, (uv_after_work_cb)RawDataEventCallbackAfter);
 	}
 
@@ -501,54 +498,106 @@ namespace telldus_v8 {
 
 		return scope.Close(Undefined());
 	}
-	
+
 	struct js_work {
+
 		uv_work_t req;
 		Persistent<Function> callback;
 		//char* data;
-		size_t f;
-		size_t v;
-		size_t devID;
+		size_t rn; // Return value, number
+		const char* rs; // Return value, string
+
+		size_t f; // Worktype
+		size_t devID; // Device ID
+		size_t v; // Arbitrary number value
+		const char* s; // Arbitrary string value
+
 	};
 
-	void run_work(uv_work_t* req) {
+	void RunWork(uv_work_t* req) {
 		js_work* work = static_cast<js_work*>(req->data);
 		switch(work->f) {
 			case 0:
-				tdTurnOn(work->devID);
+				work->rn = tdTurnOn(work->devID);
 				break;
 			case 1:
-				tdTurnOff(work->devID);
+				work->rn = tdTurnOff(work->devID);
 				break;
 			case 2:
-				tdDim(work->devID,(unsigned char)work->v);
+				work->rn = tdDim(work->devID,(unsigned char)work->v);
+				break;
+			case 3:
+				work->rn = tdLearn(work->devID);
+				break;
+			case 4:
+				work->rn = tdAddDevice();
+				break;
+			case 5: // SetName
+				work->rn = tdSetName(work->devID,work->s);
+				break;
+			case 6: // GetName
+				work->rs = tdGetName(work->devID);
+				break;
+			case 7: // SetProtocol
+				work->rn = tdSetProtocol(work->devID,work->s);
+				break;
+			case 8: // GetProtocol
+				work->rs = tdGetProtocol(work->devID);
+				break;
+			case 9: // SetModel
+				work->rn = tdSetModel(work->devID,work->s);
+				break;
+			case 10: // GetModel
+				work->rs = tdGetModel(work->devID);
+				break;
+			case 11: // GetDeviceType
+				work->rn = tdGetDeviceType(work->devID);
 				break;
 		}
-		//work->data = "foobar12";
+
+
 	}
 
-	void run_callback(uv_work_t* req, int status) {
-		
-		HandleScope scope;
+	void RunCallback(uv_work_t* req, int status) {
 
 		js_work* work = static_cast<js_work*>(req->data);
 
-		// proper way to reenter the js world
-		Handle<Value> argv[2];
-		argv[0] = Integer::New(100);
-		argv[1] = Integer::New(work->f);
+		Handle<Value> argv[3];
 
-		work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+		// proper way to reenter the js world
+		switch(work->f) {
+			// Return Number
+			case 0:
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 7:
+			case 9:
+			case 11:
+				argv[0] = Integer::New(work->rn); // Return number value
+				argv[1] = Integer::New(work->f); // Return callback function
+				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+				break;
+			// Return String
+			case 6:
+			case 8:
+			case 10:
+				argv[0] = String::New(work->rs); // Return string value
+				argv[1] = Integer::New(work->f); // Return callback function
+				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+				break;
+		}
 
 		// properly cleanup, or death by millions of tiny leaks
 		work->callback.Dispose();
 		work->callback.Clear();
-		
-		//delete[] data;
+
 		delete work;
 
 	}
-	
+
 	/* the JS entry point */
 	Handle<Value> AsyncCaller(const Arguments& args) {
 		HandleScope scope;
@@ -556,20 +605,25 @@ namespace telldus_v8 {
 		if(!args[1]->IsNumber()) {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
-		
-		js_work* work = new js_work;
-		work->f = args[0]->NumberValue();
-		work->devID = args[1]->NumberValue();
-		work->v = args[2]->NumberValue();
-		
-		work->req.data = work;
-		work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[3]));
 
-		uv_queue_work(uv_default_loop(), &work->req, run_work, (uv_after_work_cb)run_callback);
-		
+		// Prepare string
+		v8::String::Utf8Value str(args[3]);
+		const char* cstr = ToCString(str);
+
+		js_work* work = new js_work;
+		work->f = args[0]->NumberValue(); // Worktype
+		work->devID = args[1]->NumberValue(); // Device ID
+		work->v = args[2]->NumberValue(); // Arbitrary number value
+		work->s = cstr; // Arbitrary string value
+
+		work->req.data = work;
+		work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[4]));
+
+		uv_queue_work(uv_default_loop(), &work->req, RunWork, (uv_after_work_cb)RunCallback);
+
 		Local<String> retstr = String::New("Running process initializer");
 		return scope.Close(retstr);
-		
+
 		//return Undefined();
 	}
 
@@ -579,7 +633,7 @@ extern "C"
 void init(Handle<Object> target) {
 
 	HandleScope scope;
-	
+
 	target->Set(String::NewSymbol("AsyncCaller"),
 	  FunctionTemplate::New(telldus_v8::AsyncCaller)->GetFunction());
 	target->Set(String::NewSymbol("getNumberOfDevices"),
@@ -604,36 +658,37 @@ void init(Handle<Object> target) {
 	  FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
 	target->Set(String::NewSymbol("addDevice"),
 	  FunctionTemplate::New(telldus_v8::addDevice)->GetFunction());
-	
+
 	target->Set(String::NewSymbol("getName"),
 	  FunctionTemplate::New(telldus_v8::getName)->GetFunction());
 	target->Set(String::NewSymbol("setName"),
 	  FunctionTemplate::New(telldus_v8::setName)->GetFunction());
-	  
+
 	target->Set(String::NewSymbol("getProtocol"),
 	  FunctionTemplate::New(telldus_v8::getProtocol)->GetFunction());
 	target->Set(String::NewSymbol("setProtocol"),
 	  FunctionTemplate::New(telldus_v8::setProtocol)->GetFunction());
-	  
+
 	target->Set(String::NewSymbol("getModel"),
 	  FunctionTemplate::New(telldus_v8::getModel)->GetFunction());
 	target->Set(String::NewSymbol("setModel"),
 	  FunctionTemplate::New(telldus_v8::setModel)->GetFunction());
-	
+
 /*	target->Set(String::NewSymbol("myGetDeviceType"),
 	  FunctionTemplate::New(telldus_v8::myGetDeviceType)->GetFunction());
 	target->Set(String::NewSymbol("setType"),
 	  FunctionTemplate::New(telldus_v8::setType)->GetFunction());*/
-	  
+
 	target->Set(String::NewSymbol("getDeviceParameter"),
 	  FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
 	target->Set(String::NewSymbol("setDeviceParameter"),
 	  FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());
-	  
+
 	target->Set(String::NewSymbol("removeDevice"),
 	  FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
 	target->Set(String::NewSymbol("getErrorString"),
 	  FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
-	  
+
+ 
 }
 NODE_MODULE(telldus, init)
