@@ -35,7 +35,7 @@ Make sure telldusd is running on the same machine.
 
 ```javascript
 var tellduscore = require('telldus');
-var devices = tellduscore.getDevices();
+var devices = tellduscore.getDevicesSync();
 ```
 
 ---
@@ -43,16 +43,18 @@ var devices = tellduscore.getDevices();
 API
 ===
 
-getDevices
+getDevicesSync
 ----------
 
 Returns an array of device dictionary objects.
 Only configured devices are returned.
 
+Currently only available as a synchronous function.
+
 Signature:
 
 ```javascript
-var devices = tellduscore.getDevices();
+var devices = tellduscore.getDevicesSync();
 ```
 
 ```javascript
@@ -75,10 +77,14 @@ turnOn
 
 Turns a configured device ON.
 
+Synchronous version: turnOnSync(deviceId);
+
 Signature:
 
 ```javascript
-tellduscore.turnOn(deviceId);
+tellduscore.turnOn(deviceId,function(returnValue) {
+	console.log('deviceId is now ON');
+});
 ```
 
 Similar to the command
@@ -93,10 +99,14 @@ turnOff
 
 Turns a configured device OFF.
 
+Synchronous version: turnOffSync(deviceId);
+
 Signature:
 
 ```javascript
-tellduscore.turnOff(deviceId);
+tellduscore.turnOff(deviceId,function(returnValue) {
+	console.log('Device' + deviceId + ' is now OFF');
+});
 ```
 
 Similar to the command
@@ -111,10 +121,14 @@ dim
 
 Dims a configured device to a certain level.
 
+Synchronous version: dimSync(deviceId,level);
+
 Signature:
 
 ```javascript
-tellduscore.dim(deviceId, level);
+tellduscore.dim(deviceId, level,function(returnValue) {
+	console.log('Device ' + deviceId + ' is now dimmed to level ' + level);
+});
 ```
 
 
@@ -127,7 +141,9 @@ This is usefull for scanning for devices not yet configured
 Signature:
 
 ```javascript
-var listener = tellduscore.addRawDeviceEventListener(function(controllerId, data) {});
+var listener = tellduscore.addRawDeviceEventListener(function(controllerId, data) {
+	console.log('Raw device event: ' + data);
+});
 ```
 
 * `controllerId`: id of receiving controller, can identify the TellStick if several exists in the system.
@@ -146,12 +162,27 @@ Add a listener for device events
 Signature:
 
 ```javascript
-var listener = tellduscore.addDeviceEventListener(function(deviceId, status) {});
+var listener = tellduscore.addDeviceEventListener(function(deviceId, status) {
+	console.log('Device ' + deviceId + ' is now ' + status.status);
+});
 ```
 
 * `status`: is an object of the form:
 ```
     {"status": "the status"}
+```
+
+addSensorEventListener
+----------------------
+
+Add a listener for sensor events
+
+Signature:
+
+```javascript
+var listener = telldus.addSensorEventListener(function(deviceId,protocol,model,type,value,timestamp) {
+	console.log('New sensor event received: ',deviceId,protocol,model,type,value,timestamp);
+});
 ```
 
 
@@ -160,10 +191,12 @@ removeEventListener
 
 Remove a previously added listener.
 
+Currently only available as a synchronous function.
+
 Signature:
 
 ```javascript
-tellduscore.removeEventListener(listener);
+tellduscore.removeEventListenerSync(listener);
 ```
 
 ---
