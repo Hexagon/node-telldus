@@ -34,8 +34,8 @@ Installation (From npm):
 Make sure telldusd is running on the same machine.
 
 ```javascript
-var tellduscore = require('telldus');
-var devices = tellduscore.getDevicesSync();
+var telldus = require('telldus');
+var devices = telldus.getDevicesSync();
 ```
 
 ---
@@ -54,7 +54,7 @@ Currently only available as a synchronous function.
 Signature:
 
 ```javascript
-var devices = tellduscore.getDevicesSync();
+var devices = telldus.getDevicesSync();
 ```
 
 ```javascript
@@ -82,7 +82,7 @@ Synchronous version: turnOnSync(deviceId);
 Signature:
 
 ```javascript
-tellduscore.turnOn(deviceId,function(returnValue) {
+telldus.turnOn(deviceId,function(returnValue) {
 	console.log('deviceId is now ON');
 });
 ```
@@ -104,7 +104,7 @@ Synchronous version: turnOffSync(deviceId);
 Signature:
 
 ```javascript
-tellduscore.turnOff(deviceId,function(returnValue) {
+telldus.turnOff(deviceId,function(returnValue) {
 	console.log('Device' + deviceId + ' is now OFF');
 });
 ```
@@ -126,7 +126,7 @@ Synchronous version: dimSync(deviceId,level);
 Signature:
 
 ```javascript
-tellduscore.dim(deviceId, level,function(returnValue) {
+telldus.dim(deviceId, level,function(returnValue) {
 	console.log('Device ' + deviceId + ' is now dimmed to level ' + level);
 });
 ```
@@ -141,7 +141,7 @@ This is usefull for scanning for devices not yet configured
 Signature:
 
 ```javascript
-var listener = tellduscore.addRawDeviceEventListener(function(controllerId, data) {
+var listener = telldus.addRawDeviceEventListener(function(controllerId, data) {
 	console.log('Raw device event: ' + data);
 });
 ```
@@ -162,7 +162,7 @@ Add a listener for device events
 Signature:
 
 ```javascript
-var listener = tellduscore.addDeviceEventListener(function(deviceId, status) {
+var listener = telldus.addDeviceEventListener(function(deviceId, status) {
 	console.log('Device ' + deviceId + ' is now ' + status.status);
 });
 ```
@@ -196,7 +196,7 @@ Currently only available as a synchronous function.
 Signature:
 
 ```javascript
-tellduscore.removeEventListenerSync(listener);
+telldus.removeEventListenerSync(listener);
 ```
 
 ---
