@@ -132,6 +132,7 @@ namespace telldus_v8 {
 	Local<Object> GetDeviceStatus(int id){
 		Local<Object> status = Object::New();
 		int lastSentCommand = tdLastSentCommand(id, SUPPORTED_METHODS);
+		int level_num = 0;
 		char *level = 0;
 		switch(lastSentCommand) {
 			case TELLSTICK_TURNON:
@@ -142,9 +143,17 @@ namespace telldus_v8 {
 				break;
 			case TELLSTICK_DIM:
 				status->Set(String::NewSymbol("status"), String::New("DIM"));
+
+				// Get level, returned from telldus-core as char
 				level = tdLastSentValue(id);
-				status->Set(String::NewSymbol("level"), String::New(level, strlen(level)));
+
+				// Convert to number and add to object
+				level_num = atoi(level);
+				status->Set(String::NewSymbol("level"), Number::New(level_num));
+
+				// Clean up the mess
 				tdReleaseString(level);
+
 				break;
 			default:
 				status->Set(String::NewSymbol("status"), String::New("UNNKOWN"));
