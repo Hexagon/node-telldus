@@ -11,5 +11,6 @@ if ( result ) {
 	var newName = telldus.getNameSync(deviceId);
 	console.log('And last but not least, this! (telldus-core returned ' + newName + ' as name of ' + deviceId +')');
 } else {
-	console.log( 'Name change failed...' );
+	var oldName = telldus.getNameSync(deviceId);
+	console.log( 'Name change failed, name is still ' + oldName );
 }

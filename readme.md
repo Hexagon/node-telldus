@@ -77,7 +77,7 @@ turnOn
 
 Turns a configured device ON.
 
-Synchronous version: turnOnSync(deviceId);
+Synchronous version: ```javascript var returnValue = turnOnSync(deviceId);```
 
 Signature:
 
@@ -99,7 +99,7 @@ turnOff
 
 Turns a configured device OFF.
 
-Synchronous version: turnOffSync(deviceId);
+Synchronous version: ```var returnValue = turnOffSync(deviceId);```
 
 Signature:
 
@@ -121,7 +121,7 @@ dim
 
 Dims a configured device to a certain level.
 
-Synchronous version: dimSync(deviceId,level);
+Synchronous version: ```javascript var returnValue = dimSync(deviceId,level);```
 
 Signature:
 
@@ -191,17 +191,40 @@ removeEventListener
 
 Remove a previously added listener.
 
-Currently only available as a synchronous function.
+Synchronous version: ```javascript var returnValue = telldus.removeEventListenerSync(listener);```
+Signature:
+
+```javascript
+telldus.removeEventListener(listener,function(returnValue) {});
+```
+
+
+getErrorString
+-------------------
+
+Get the string representation of a return value
+
+Synchronous version: ```javascript var errStr = telldus.getErrorStringSync(returnValue);```
 
 Signature:
 
 ```javascript
-telldus.removeEventListenerSync(listener);
+telldus.turnOn(deviceId,function(returnValue) {
+	telldus.getErrorString(returnValue,function (errStr) {
+		if( errStr == 'Success' ) {
+			console.log(deviceId + ' is now ON');
+			process.exit(0);
+		} else {
+			console.error('turnOn failed for device ' + deviceId + ', error: ' + errStr);
+			process.exit(0);
+		}
+	});
+});
 ```
+
 
 ---
 
 License and Credits:
 
 This project is licensed under the MIT license and is forked from telldus-core-js (https://github.com/evilmachina/telldus-core-js) by GitHub user evilmachina. 
-

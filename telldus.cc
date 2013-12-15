@@ -232,11 +232,19 @@ namespace telldus_v8 {
 	}
 
 	Handle<Value> getName( const Arguments& args ) {
+
 		HandleScope scope;
 		if (!args[0]->IsNumber()) {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
-		Local<String> str = String::New(tdGetName(args[0]->NumberValue()));
+
+		// Save the string temporarily
+		char * l_str = tdGetName(args[0]->NumberValue());
+		Local<String> str = String::New(l_str);
+
+		// ... and release it
+		tdReleaseString(l_str);
+
 		return scope.Close(str);
 	}
 
@@ -259,7 +267,13 @@ namespace telldus_v8 {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
 
-		Local<String> str = String::New(tdGetProtocol(args[0]->NumberValue()));
+		// Save the string temporarily
+		char * l_str = tdGetProtocol(args[0]->NumberValue());
+		Local<String> str = String::New(l_str);
+
+		// ... and release it
+		tdReleaseString(l_str);
+
 		return scope.Close(str);
 	}
 	
@@ -282,7 +296,13 @@ namespace telldus_v8 {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
 		
-		Local<String> str = String::New(tdGetModel(args[0]->NumberValue()));
+		// Save the string temporarily
+		char * l_str = tdGetModel(args[0]->NumberValue());
+		Local<String> str = String::New(l_str);
+
+		// ... and release it
+		tdReleaseString(l_str);
+
 		return scope.Close(str);
 	}
 	
@@ -305,14 +325,22 @@ namespace telldus_v8 {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
 		
+		// Prepare string arguments
 		v8::String::Utf8Value str1(args[1]);
 		const char* cstr1 = ToCString(str1);
 		
 		v8::String::Utf8Value str2(args[2]);
 		const char* cstr2 = ToCString(str2);
-		
-		Local<String> str = String::New(tdGetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
+
+		// Save the string temporarily
+		char * l_str = tdGetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 );
+		Local<String> str = String::New(l_str);
+
+		// ... and release it
+		tdReleaseString(l_str);
+
 		return scope.Close(str);
+
 	}
 	
 	Handle<Value> setDeviceParameter( const Arguments& args ) {
@@ -345,7 +373,14 @@ namespace telldus_v8 {
 		if (!args[0]->IsNumber()) {
 			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
 		}
-		Local<String> str = String::New(tdGetErrorString(args[0]->NumberValue()));
+
+		// Save the string temporarily
+		char * l_str = tdGetErrorString(args[0]->NumberValue());
+		Local<String> str = String::New(l_str);
+
+		// ... and release it
+		tdReleaseString(l_str);
+
 		return scope.Close(str);
 	}
 	
@@ -492,11 +527,12 @@ namespace telldus_v8 {
 		if (!args[0]->IsNumber()) {
 			return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (int callbackId)")));
 		}
-		tdUnregisterCallback(args[0]->ToInteger()->Value());
+
+		Local<Number> num = Number::New(tdUnregisterCallback(args[0]->ToInteger()->Value()));
 
 		//FIXME: Fix leak of callback.
 
-		return scope.Close(Undefined());
+		return scope.Close(num);
 	}
 
 	struct js_work {
@@ -504,13 +540,14 @@ namespace telldus_v8 {
 		uv_work_t req;
 		Persistent<Function> callback;
 		//char* data;
-		size_t rn; // Return value, number
-		const char* rs; // Return value, string
+		int rn; // Return value, number
+		char* rs; // Return value, string
 
-		size_t f; // Worktype
-		size_t devID; // Device ID
-		size_t v; // Arbitrary number value
+		int f; // Worktype
+		int devID; // Device ID
+		int v; // Arbitrary number value
 		const char* s; // Arbitrary string value
+		bool string_used;
 
 	};
 
@@ -537,21 +574,34 @@ namespace telldus_v8 {
 				break;
 			case 6: // GetName
 				work->rs = tdGetName(work->devID);
+				work->string_used = true;
 				break;
 			case 7: // SetProtocol
 				work->rn = tdSetProtocol(work->devID,work->s);
 				break;
 			case 8: // GetProtocol
 				work->rs = tdGetProtocol(work->devID);
+				work->string_used = true;
 				break;
 			case 9: // SetModel
 				work->rn = tdSetModel(work->devID,work->s);
 				break;
 			case 10: // GetModel
 				work->rs = tdGetModel(work->devID);
+				work->string_used = true;
 				break;
 			case 11: // GetDeviceType
 				work->rn = tdGetDeviceType(work->devID);
+				break;
+			case 12:
+				work->rn = tdRemoveDevice(work->devID);
+				break;
+			case 13:
+				work->rn = tdUnregisterCallback(work->devID);
+				break;
+			case 14: // GetModel
+				work->rs = tdGetErrorString(work->devID);
+				work->string_used = true;
 				break;
 		}
 
@@ -561,6 +611,7 @@ namespace telldus_v8 {
 	void RunCallback(uv_work_t* req, int status) {
 
 		js_work* work = static_cast<js_work*>(req->data);
+		work->string_used = false;
 
 		Handle<Value> argv[3];
 
@@ -576,6 +627,8 @@ namespace telldus_v8 {
 			case 7:
 			case 9:
 			case 11:
+			case 12:
+			case 13:
 				argv[0] = Integer::New(work->rn); // Return number value
 				argv[1] = Integer::New(work->f); // Return callback function
 				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
@@ -584,10 +637,16 @@ namespace telldus_v8 {
 			case 6:
 			case 8:
 			case 10:
+			case 14:
 				argv[0] = String::New(work->rs); // Return string value
 				argv[1] = Integer::New(work->f); // Return callback function
 				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
 				break;
+		}
+
+		// Check if we have an allocated string from telldus
+		if( work->string_used ) {
+			tdReleaseString(work->rs);
 		}
 
 		// properly cleanup, or death by millions of tiny leaks
@@ -679,10 +738,10 @@ void init(Handle<Object> target) {
 	target->Set(String::NewSymbol("setType"),
 	  FunctionTemplate::New(telldus_v8::setType)->GetFunction());*/
 
-	target->Set(String::NewSymbol("getDeviceParameter"),
+/*	target->Set(String::NewSymbol("getDeviceParameter"),
 	  FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
 	target->Set(String::NewSymbol("setDeviceParameter"),
-	  FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());
+	  FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());*/
 
 	target->Set(String::NewSymbol("removeDevice"),
 	  FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
