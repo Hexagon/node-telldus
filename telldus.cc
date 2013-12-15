@@ -1,5 +1,5 @@
 #ifndef BUILDING_NODE_EXTENSION
-	#define BUILDING_NODE_EXTENSION
+   #define BUILDING_NODE_EXTENSION
 #endif // BUILDING_NODE_EXTENSION
 
 #include <node.h>
@@ -26,373 +26,373 @@ const char* ToCString(const v8::String::Utf8Value& value) {
 
 namespace telldus_v8 {
 
-	struct DeviceEventBaton {
-		Persistent<Function> callback;
-		int deviceId;
-	};
+   struct DeviceEventBaton {
+      Persistent<Function> callback;
+      int deviceId;
+   };
 
-	struct SensorEventBaton {
-		Persistent<Function> callback;
-		int sensorId;
-		const char *model;
-		const char *protocol;
-		const char *value;
-		int ts;
-		int dataType;
-	};
+   struct SensorEventBaton {
+      Persistent<Function> callback;
+      int sensorId;
+      const char *model;
+      const char *protocol;
+      const char *value;
+      int ts;
+      int dataType;
+   };
 
-	struct RawDeviceEventBaton {
-		Persistent<Function> callback;
-		int controllerId;
-		const char *data;
-	};
+   struct RawDeviceEventBaton {
+      Persistent<Function> callback;
+      int controllerId;
+      const char *data;
+   };
 
-	const int SUPPORTED_METHODS =
-	TELLSTICK_TURNON
-	| TELLSTICK_TURNOFF
-	| TELLSTICK_BELL
-	| TELLSTICK_TOGGLE
-	| TELLSTICK_DIM
-	| TELLSTICK_LEARN
-	| TELLSTICK_EXECUTE
-	| TELLSTICK_UP
-	| TELLSTICK_DOWN
-	| TELLSTICK_STOP;
+   const int SUPPORTED_METHODS =
+   TELLSTICK_TURNON
+   | TELLSTICK_TURNOFF
+   | TELLSTICK_BELL
+   | TELLSTICK_TOGGLE
+   | TELLSTICK_DIM
+   | TELLSTICK_LEARN
+   | TELLSTICK_EXECUTE
+   | TELLSTICK_UP
+   | TELLSTICK_DOWN
+   | TELLSTICK_STOP;
 
-	Handle<Value> getNumberOfDevices( const Arguments& args ) {
-		HandleScope scope;
-		//tdInit();
-		Local<Number> num = Number::New(tdGetNumberOfDevices());
-		return scope.Close(num);
-	}
+   Handle<Value> getNumberOfDevices( const Arguments& args ) {
+      HandleScope scope;
+      //tdInit();
+      Local<Number> num = Number::New(tdGetNumberOfDevices());
+      return scope.Close(num);
+   }
 
-	Local<Object> GetSuportedMethods(int id){
+   Local<Object> GetSuportedMethods(int id){
 
-		int methods = tdMethods( id, SUPPORTED_METHODS );
-		Local<Array> methodsObj = Array::New();
-		int i = 0;
-		if (methods & TELLSTICK_TURNON)
-		{
-			methodsObj->Set(i++, String::New("TURNON"));
-		}
-		if (methods & TELLSTICK_TURNOFF)
-		{
-			methodsObj->Set(i++, String::New("TURNOFF"));
-		}
-		if (methods & TELLSTICK_BELL)
-		{
-			methodsObj->Set(i++, String::New("BELL"));
-		}
-		if (methods & TELLSTICK_TOGGLE)
-		{
-			methodsObj->Set(i++, String::New("TOGGLE"));
-		}
-		if (methods & TELLSTICK_DIM)
-		{
-			methodsObj->Set(i++, String::New("DIM"));
-		}
-		if (methods & TELLSTICK_UP)
-		{
-			methodsObj->Set(i++, String::New("UP"));
-		}
-		if (methods & TELLSTICK_DOWN)
-		{
-			methodsObj->Set(i++, String::New("DOWN"));
-		}
-		if (methods & TELLSTICK_STOP)
-		{
-			methodsObj->Set(i++, String::New("STOP"));
-		}
-		if (methods & TELLSTICK_LEARN)
-		{
-			methodsObj->Set(i++, String::New("LEARN"));
-		}
+      int methods = tdMethods( id, SUPPORTED_METHODS );
+      Local<Array> methodsObj = Array::New();
+      int i = 0;
+      if (methods & TELLSTICK_TURNON)
+      {
+         methodsObj->Set(i++, String::New("TURNON"));
+      }
+      if (methods & TELLSTICK_TURNOFF)
+      {
+         methodsObj->Set(i++, String::New("TURNOFF"));
+      }
+      if (methods & TELLSTICK_BELL)
+      {
+         methodsObj->Set(i++, String::New("BELL"));
+      }
+      if (methods & TELLSTICK_TOGGLE)
+      {
+         methodsObj->Set(i++, String::New("TOGGLE"));
+      }
+      if (methods & TELLSTICK_DIM)
+      {
+         methodsObj->Set(i++, String::New("DIM"));
+      }
+      if (methods & TELLSTICK_UP)
+      {
+         methodsObj->Set(i++, String::New("UP"));
+      }
+      if (methods & TELLSTICK_DOWN)
+      {
+         methodsObj->Set(i++, String::New("DOWN"));
+      }
+      if (methods & TELLSTICK_STOP)
+      {
+         methodsObj->Set(i++, String::New("STOP"));
+      }
+      if (methods & TELLSTICK_LEARN)
+      {
+         methodsObj->Set(i++, String::New("LEARN"));
+      }
 
-		return methodsObj;
+      return methodsObj;
 
-	}
+   }
 
-	Local<String> GetDeviceType(int id){
-		int type = tdGetDeviceType(id);
+   Local<String> GetDeviceType(int id){
+      int type = tdGetDeviceType(id);
 
-		if(type & TELLSTICK_TYPE_DEVICE){
-			return String::New("DEVICE");
-		}
+      if(type & TELLSTICK_TYPE_DEVICE){
+         return String::New("DEVICE");
+      }
 
-		if(type & TELLSTICK_TYPE_GROUP){
-			return String::New("GROUP");
-		}
+      if(type & TELLSTICK_TYPE_GROUP){
+         return String::New("GROUP");
+      }
 
-		if(type & TELLSTICK_TYPE_SCENE){
-			return String::New("SCENE");
-		}
-		return String::New("UNKNOWN");
-	}
+      if(type & TELLSTICK_TYPE_SCENE){
+         return String::New("SCENE");
+      }
+      return String::New("UNKNOWN");
+   }
 
-	Local<Object> GetDeviceStatus(int id){
-		Local<Object> status = Object::New();
-		int lastSentCommand = tdLastSentCommand(id, SUPPORTED_METHODS);
-		int level_num = 0;
-		char *level = 0;
-		switch(lastSentCommand) {
-			case TELLSTICK_TURNON:
-				status->Set(String::NewSymbol("status"), String::New("ON"));
-				break;
-			case TELLSTICK_TURNOFF:
-				status->Set(String::NewSymbol("status"), String::New("OFF"));
-				break;
-			case TELLSTICK_DIM:
-				status->Set(String::NewSymbol("status"), String::New("DIM"));
+   Local<Object> GetDeviceStatus(int id){
+      Local<Object> status = Object::New();
+      int lastSentCommand = tdLastSentCommand(id, SUPPORTED_METHODS);
+      int level_num = 0;
+      char *level = 0;
+      switch(lastSentCommand) {
+         case TELLSTICK_TURNON:
+            status->Set(String::NewSymbol("status"), String::New("ON"));
+            break;
+         case TELLSTICK_TURNOFF:
+            status->Set(String::NewSymbol("status"), String::New("OFF"));
+            break;
+         case TELLSTICK_DIM:
+            status->Set(String::NewSymbol("status"), String::New("DIM"));
 
-				// Get level, returned from telldus-core as char
-				level = tdLastSentValue(id);
+            // Get level, returned from telldus-core as char
+            level = tdLastSentValue(id);
 
-				// Convert to number and add to object
-				level_num = atoi(level);
-				status->Set(String::NewSymbol("level"), Number::New(level_num));
+            // Convert to number and add to object
+            level_num = atoi(level);
+            status->Set(String::NewSymbol("level"), Number::New(level_num));
 
-				// Clean up the mess
-				tdReleaseString(level);
+            // Clean up the mess
+            tdReleaseString(level);
 
-				break;
-			default:
-				status->Set(String::NewSymbol("status"), String::New("UNNKOWN"));
-		}
+            break;
+         default:
+            status->Set(String::NewSymbol("status"), String::New("UNNKOWN"));
+      }
 
-		return status;
-	}
+      return status;
+   }
 
-	Local<Object> GetDevice(int index) {
+   Local<Object> GetDevice(int index) {
 
-		int id = tdGetDeviceId( index );
-		char *name = tdGetName( id );
-		char *model = tdGetModel(id);
+      int id = tdGetDeviceId( index );
+      char *name = tdGetName( id );
+      char *model = tdGetModel(id);
 
-		Local<Object> obj = Object::New();
-		obj->Set(String::NewSymbol("name"), String::New(name, strlen(name)));
-		obj->Set(String::NewSymbol("id"), Number::New(id));
-		obj->Set(String::NewSymbol("methods"), GetSuportedMethods(id));
-		obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
-		obj->Set(String::NewSymbol("type"), GetDeviceType(id));
-		obj->Set(String::NewSymbol("status"), GetDeviceStatus(id));
+      Local<Object> obj = Object::New();
+      obj->Set(String::NewSymbol("name"), String::New(name, strlen(name)));
+      obj->Set(String::NewSymbol("id"), Number::New(id));
+      obj->Set(String::NewSymbol("methods"), GetSuportedMethods(id));
+      obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
+      obj->Set(String::NewSymbol("type"), GetDeviceType(id));
+      obj->Set(String::NewSymbol("status"), GetDeviceStatus(id));
 
-		tdReleaseString(name);
-		tdReleaseString(model);
+      tdReleaseString(name);
+      tdReleaseString(model);
 
-		return obj;
-	}
+      return obj;
+   }
 
-	Handle<Value> getDevices( const Arguments& args ) {
-		HandleScope scope;
-		tdInit();
+   Handle<Value> getDevices( const Arguments& args ) {
+      HandleScope scope;
+      tdInit();
 
-		int intNumberOfDevices = tdGetNumberOfDevices();
-		Local<Array> devices = Array::New(intNumberOfDevices);
+      int intNumberOfDevices = tdGetNumberOfDevices();
+      Local<Array> devices = Array::New(intNumberOfDevices);
 
-		for (int i = 0; i < intNumberOfDevices; i++) {
-		   devices->Set(i, GetDevice(i));
-		 }
-		return scope.Close(devices);
-	}
+      for (int i = 0; i < intNumberOfDevices; i++) {
+         devices->Set(i, GetDevice(i));
+       }
+      return scope.Close(devices);
+   }
 
-	Handle<Value> turnOn( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+   Handle<Value> turnOn( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		Local<Number> num = Number::New(tdTurnOn(args[0]->NumberValue()));
-		return scope.Close(num);
-	}
+      Local<Number> num = Number::New(tdTurnOn(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
 
-	Handle<Value> turnOff( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+   Handle<Value> turnOff( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		Local<Number> num = Number::New(tdTurnOff(args[0]->NumberValue()));
-		return scope.Close(num);
-	}
+      Local<Number> num = Number::New(tdTurnOff(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
 
-	Handle<Value> dim( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()|| !args[1]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+   Handle<Value> dim( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()|| !args[1]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		Local<Number> num = Number::New(tdDim(args[0]->NumberValue(),(unsigned char)args[1]->NumberValue() ));
-		return scope.Close(num);
-	}
+      Local<Number> num = Number::New(tdDim(args[0]->NumberValue(),(unsigned char)args[1]->NumberValue() ));
+      return scope.Close(num);
+   }
 
-	Handle<Value> learn( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		Local<Number> num = Number::New(tdLearn(args[0]->NumberValue()));
-		return scope.Close(num);
-	}
+   Handle<Value> learn( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      Local<Number> num = Number::New(tdLearn(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
 
-	Handle<Value> addDevice( const Arguments& args ) {
-		HandleScope scope;
-		Local<Number> num = Number::New(tdAddDevice());
-		return scope.Close(num);
-	}
+   Handle<Value> addDevice( const Arguments& args ) {
+      HandleScope scope;
+      Local<Number> num = Number::New(tdAddDevice());
+      return scope.Close(num);
+   }
 
-	Handle<Value> getName( const Arguments& args ) {
+   Handle<Value> getName( const Arguments& args ) {
 
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		// Save the string temporarily
-		char * l_str = tdGetName(args[0]->NumberValue());
-		Local<String> str = String::New(l_str);
+      // Save the string temporarily
+      char * l_str = tdGetName(args[0]->NumberValue());
+      Local<String> str = String::New(l_str);
 
-		// ... and release it
-		tdReleaseString(l_str);
+      // ... and release it
+      tdReleaseString(l_str);
 
-		return scope.Close(str);
-	}
+      return scope.Close(str);
+   }
 
-	Handle<Value> setName( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()|| !args[1]->IsString()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+   Handle<Value> setName( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()|| !args[1]->IsString()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		v8::String::Utf8Value str(args[1]);
-		const char* cstr = ToCString(str);
-		
-		Handle<Boolean> num = Boolean::New(tdSetName(args[0]->IntegerValue(), cstr ));
-		return scope.Close(num);
-	}
-	
-	Handle<Value> getProtocol( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+      v8::String::Utf8Value str(args[1]);
+      const char* cstr = ToCString(str);
+      
+      Handle<Boolean> num = Boolean::New(tdSetName(args[0]->IntegerValue(), cstr ));
+      return scope.Close(num);
+   }
+   
+   Handle<Value> getProtocol( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		// Save the string temporarily
-		char * l_str = tdGetProtocol(args[0]->NumberValue());
-		Local<String> str = String::New(l_str);
+      // Save the string temporarily
+      char * l_str = tdGetProtocol(args[0]->NumberValue());
+      Local<String> str = String::New(l_str);
 
-		// ... and release it
-		tdReleaseString(l_str);
+      // ... and release it
+      tdReleaseString(l_str);
 
-		return scope.Close(str);
-	}
-	
-	Handle<Value> setProtocol( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()|| !args[1]->IsString()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		
-		v8::String::Utf8Value str(args[1]);
-		const char* cstr = ToCString(str);
-		
-		Handle<Boolean> num = Boolean::New(tdSetProtocol(args[0]->IntegerValue(), cstr ));
-		return scope.Close(num);
-	}
-	
-	Handle<Value> getModel( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		
-		// Save the string temporarily
-		char * l_str = tdGetModel(args[0]->NumberValue());
-		Local<String> str = String::New(l_str);
+      return scope.Close(str);
+   }
+   
+   Handle<Value> setProtocol( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()|| !args[1]->IsString()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      
+      v8::String::Utf8Value str(args[1]);
+      const char* cstr = ToCString(str);
+      
+      Handle<Boolean> num = Boolean::New(tdSetProtocol(args[0]->IntegerValue(), cstr ));
+      return scope.Close(num);
+   }
+   
+   Handle<Value> getModel( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      
+      // Save the string temporarily
+      char * l_str = tdGetModel(args[0]->NumberValue());
+      Local<String> str = String::New(l_str);
 
-		// ... and release it
-		tdReleaseString(l_str);
+      // ... and release it
+      tdReleaseString(l_str);
 
-		return scope.Close(str);
-	}
-	
-	Handle<Value> setModel( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()|| !args[1]->IsString()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		
-		v8::String::Utf8Value str(args[1]);
-		const char* cstr = ToCString(str);
-		
-		Handle<Boolean> num = Boolean::New(tdSetModel(args[0]->NumberValue(), cstr ));
-		return scope.Close(num);
-	}
-	
-	Handle<Value> getDeviceParameter( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber() || !args[1]->IsString() || !args[2]->IsString()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		
-		// Prepare string arguments
-		v8::String::Utf8Value str1(args[1]);
-		const char* cstr1 = ToCString(str1);
-		
-		v8::String::Utf8Value str2(args[2]);
-		const char* cstr2 = ToCString(str2);
+      return scope.Close(str);
+   }
+   
+   Handle<Value> setModel( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()|| !args[1]->IsString()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      
+      v8::String::Utf8Value str(args[1]);
+      const char* cstr = ToCString(str);
+      
+      Handle<Boolean> num = Boolean::New(tdSetModel(args[0]->NumberValue(), cstr ));
+      return scope.Close(num);
+   }
+   
+   Handle<Value> getDeviceParameter( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber() || !args[1]->IsString() || !args[2]->IsString()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      
+      // Prepare string arguments
+      v8::String::Utf8Value str1(args[1]);
+      const char* cstr1 = ToCString(str1);
+      
+      v8::String::Utf8Value str2(args[2]);
+      const char* cstr2 = ToCString(str2);
 
-		// Save the string temporarily
-		char * l_str = tdGetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 );
-		Local<String> str = String::New(l_str);
+      // Save the string temporarily
+      char * l_str = tdGetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 );
+      Local<String> str = String::New(l_str);
 
-		// ... and release it
-		tdReleaseString(l_str);
+      // ... and release it
+      tdReleaseString(l_str);
 
-		return scope.Close(str);
+      return scope.Close(str);
 
-	}
-	
-	Handle<Value> setDeviceParameter( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber() || !args[1]->IsString() || !args[2]->IsString()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		
-		v8::String::Utf8Value str1(args[1]);
-		const char* cstr1 = ToCString(str1);
-		
-		v8::String::Utf8Value str2(args[2]);
-		const char* cstr2 = ToCString(str2);
-		
-		Local<Number> num = Number::New(tdSetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
-		return scope.Close(num);
-	}
-	
-	Handle<Value> removeDevice( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
-		Local<Number> num = Number::New(tdRemoveDevice(args[0]->NumberValue()));
-		return scope.Close(num);
-	}
-	
-	Handle<Value> getErrorString( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+   }
+   
+   Handle<Value> setDeviceParameter( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber() || !args[1]->IsString() || !args[2]->IsString()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      
+      v8::String::Utf8Value str1(args[1]);
+      const char* cstr1 = ToCString(str1);
+      
+      v8::String::Utf8Value str2(args[2]);
+      const char* cstr2 = ToCString(str2);
+      
+      Local<Number> num = Number::New(tdSetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
+      return scope.Close(num);
+   }
+   
+   Handle<Value> removeDevice( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+      Local<Number> num = Number::New(tdRemoveDevice(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+   
+   Handle<Value> getErrorString( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
 
-		// Save the string temporarily
-		char * l_str = tdGetErrorString(args[0]->NumberValue());
-		Local<String> str = String::New(l_str);
+      // Save the string temporarily
+      char * l_str = tdGetErrorString(args[0]->NumberValue());
+      Local<String> str = String::New(l_str);
 
-		// ... and release it
-		tdReleaseString(l_str);
+      // ... and release it
+      tdReleaseString(l_str);
 
-		return scope.Close(str);
-	}
-	
+      return scope.Close(str);
+   }
+   
 
     void DeviceEventCallbackWorking(uv_work_t *req) {
         // Space for work ...
@@ -491,277 +491,277 @@ namespace telldus_v8 {
         // Space for work ...
     }
 
-	void RawDataEventCallbackAfter(uv_work_t *req, int status) {
+   void RawDataEventCallbackAfter(uv_work_t *req, int status) {
 
-		HandleScope scope;
-		RawDeviceEventBaton *baton = static_cast<RawDeviceEventBaton *>(req->data);
+      HandleScope scope;
+      RawDeviceEventBaton *baton = static_cast<RawDeviceEventBaton *>(req->data);
 
-		Local<Value> args[] = {
-			Number::New(baton->controllerId),
-			String::New(baton->data),
-		};
+      Local<Value> args[] = {
+         Number::New(baton->controllerId),
+         String::New(baton->data),
+      };
 
-		baton->callback->Call(baton->callback, 2, args);
-		scope.Close(Undefined());
+      baton->callback->Call(baton->callback, 2, args);
+      scope.Close(Undefined());
 
-		delete baton;
-		delete req;
-	}
+      delete baton;
+      delete req;
+   }
 
-	void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
-		RawDeviceEventBaton *baton = new RawDeviceEventBaton();
-		baton->callback = static_cast<Function *>(callbackVoid);
-		baton->data = data;
-		baton->controllerId = controllerId;
+   void RawDataCallback(const char* data, int controllerId, int callbackId, void *callbackVoid) {
+      RawDeviceEventBaton *baton = new RawDeviceEventBaton();
+      baton->callback = static_cast<Function *>(callbackVoid);
+      baton->data = data;
+      baton->controllerId = controllerId;
 
-		uv_work_t* req = new uv_work_t;
-        	req->data = baton;
-		uv_queue_work(uv_default_loop(), req, (uv_work_cb)RawDataEventCallbackWorking, (uv_after_work_cb)RawDataEventCallbackAfter);
-	}
-
-
-	Handle<Value> addRawDeviceEventListener( const Arguments& args ) {
-		HandleScope scope;
-		if (!args[0]->IsFunction()) {
-			return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
-		}
-
-		Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-		Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, *callback));
-		return scope.Close(num);
-	}
-
-	Handle<Value> removeEventListener( const Arguments &args ) {
-		HandleScope scope;
-		if (!args[0]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (int callbackId)")));
-		}
-
-		Local<Number> num = Number::New(tdUnregisterCallback(args[0]->ToInteger()->Value()));
-
-		//FIXME: Fix leak of callback.
-
-		return scope.Close(num);
-	}
-
-	struct js_work {
-
-		uv_work_t req;
-		Persistent<Function> callback;
-		//char* data;
-		bool rb; // Return value, boolean
-		int rn; // Return value, number
-		char* rs; // Return value, string
-
-		int f; // Worktype
-		int devID; // Device ID
-		int v; // Arbitrary number value
-		const char* s; // Arbitrary string value
-		bool string_used;
-
-	};
-
-	void RunWork(uv_work_t* req) {
-		js_work* work = static_cast<js_work*>(req->data);
-		switch(work->f) {
-			case 0:
-				work->rn = tdTurnOn(work->devID);
-				break;
-			case 1:
-				work->rn = tdTurnOff(work->devID);
-				break;
-			case 2:
-				work->rn = tdDim(work->devID,(unsigned char)work->v);
-				break;
-			case 3:
-				work->rn = tdLearn(work->devID);
-				break;
-			case 4:
-				work->rn = tdAddDevice();
-				break;
-			case 5: // SetName
-				work->rb = tdSetName(work->devID,work->s);
-				break;
-			case 6: // GetName
-				work->rs = tdGetName(work->devID);
-				work->string_used = true;
-				break;
-			case 7: // SetProtocol
-				work->rb = tdSetProtocol(work->devID,work->s);
-				break;
-			case 8: // GetProtocol
-				work->rs = tdGetProtocol(work->devID);
-				work->string_used = true;
-				break;
-			case 9: // SetModel
-				work->rb = tdSetModel(work->devID,work->s);
-				break;
-			case 10: // GetModel
-				work->rs = tdGetModel(work->devID);
-				work->string_used = true;
-				break;
-			case 11: // GetDeviceType
-				work->rn = tdGetDeviceType(work->devID);
-				break;
-			case 12:
-				work->rn = tdRemoveDevice(work->devID);
-				break;
-			case 13:
-				work->rn = tdUnregisterCallback(work->devID);
-				break;
-			case 14: // GetModel
-				work->rs = tdGetErrorString(work->devID);
-				work->string_used = true;
-				break;
-		}
+      uv_work_t* req = new uv_work_t;
+         req->data = baton;
+      uv_queue_work(uv_default_loop(), req, (uv_work_cb)RawDataEventCallbackWorking, (uv_after_work_cb)RawDataEventCallbackAfter);
+   }
 
 
-	}
+   Handle<Value> addRawDeviceEventListener( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsFunction()) {
+         return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (function callback)")));
+      }
 
-	void RunCallback(uv_work_t* req, int status) {
+      Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
+      Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, *callback));
+      return scope.Close(num);
+   }
 
-		js_work* work = static_cast<js_work*>(req->data);
-		work->string_used = false;
+   Handle<Value> removeEventListener( const Arguments &args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Expected 1 argument: (int callbackId)")));
+      }
 
-		Handle<Value> argv[3];
+      Local<Number> num = Number::New(tdUnregisterCallback(args[0]->ToInteger()->Value()));
 
-		// proper way to reenter the js world
-		switch(work->f) {
-			// Return Number
-			case 0:
-			case 1:
-			case 2:
-			case 3:
-			case 4:
-			case 11:
-			case 12:
-			case 13:
-				argv[0] = Integer::New(work->rn); // Return number value
-				argv[1] = Integer::New(work->f); // Return callback function
-				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-				break;
-			// Return boolean
-			case 5:
-			case 7:
-			case 9:
-				argv[0] = Boolean::New(work->rb); // Return number value
-				argv[1] = Integer::New(work->f); // Return callback function
-				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-				break;
-			// Return String
-			case 6:
-			case 8:
-			case 10:
-			case 14:
-				argv[0] = String::New(work->rs); // Return string value
-				argv[1] = Integer::New(work->f); // Return callback function
-				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
-				break;
-		}
+      //FIXME: Fix leak of callback.
 
-		// Check if we have an allocated string from telldus
-		if( work->string_used ) {
-			tdReleaseString(work->rs);
-		}
+      return scope.Close(num);
+   }
 
-		// properly cleanup, or death by millions of tiny leaks
-		work->callback.Dispose();
-		work->callback.Clear();
+   struct js_work {
 
-		delete work;
+      uv_work_t req;
+      Persistent<Function> callback;
+      //char* data;
+      bool rb; // Return value, boolean
+      int rn; // Return value, number
+      char* rs; // Return value, string
 
-	}
+      int f; // Worktype
+      int devID; // Device ID
+      int v; // Arbitrary number value
+      const char* s; // Arbitrary string value
+      bool string_used;
 
-	/* the JS entry point */
-	Handle<Value> AsyncCaller(const Arguments& args) {
-		HandleScope scope;
+   };
 
-		if(!args[1]->IsNumber()) {
-			return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		}
+   void RunWork(uv_work_t* req) {
+      js_work* work = static_cast<js_work*>(req->data);
+      switch(work->f) {
+         case 0:
+            work->rn = tdTurnOn(work->devID);
+            break;
+         case 1:
+            work->rn = tdTurnOff(work->devID);
+            break;
+         case 2:
+            work->rn = tdDim(work->devID,(unsigned char)work->v);
+            break;
+         case 3:
+            work->rn = tdLearn(work->devID);
+            break;
+         case 4:
+            work->rn = tdAddDevice();
+            break;
+         case 5: // SetName
+            work->rb = tdSetName(work->devID,work->s);
+            break;
+         case 6: // GetName
+            work->rs = tdGetName(work->devID);
+            work->string_used = true;
+            break;
+         case 7: // SetProtocol
+            work->rb = tdSetProtocol(work->devID,work->s);
+            break;
+         case 8: // GetProtocol
+            work->rs = tdGetProtocol(work->devID);
+            work->string_used = true;
+            break;
+         case 9: // SetModel
+            work->rb = tdSetModel(work->devID,work->s);
+            break;
+         case 10: // GetModel
+            work->rs = tdGetModel(work->devID);
+            work->string_used = true;
+            break;
+         case 11: // GetDeviceType
+            work->rn = tdGetDeviceType(work->devID);
+            break;
+         case 12:
+            work->rn = tdRemoveDevice(work->devID);
+            break;
+         case 13:
+            work->rn = tdUnregisterCallback(work->devID);
+            break;
+         case 14: // GetModel
+            work->rs = tdGetErrorString(work->devID);
+            work->string_used = true;
+            break;
+      }
 
-		// Prepare string
-		v8::String::Utf8Value str(args[3]);
-		const char* cstr = ToCString(str);
 
-		js_work* work = new js_work;
-		work->f = args[0]->NumberValue(); // Worktype
-		work->devID = args[1]->NumberValue(); // Device ID
-		work->v = args[2]->NumberValue(); // Arbitrary number value
-		work->s = cstr; // Arbitrary string value
+   }
 
-		work->req.data = work;
-		work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[4]));
+   void RunCallback(uv_work_t* req, int status) {
 
-		uv_queue_work(uv_default_loop(), &work->req, RunWork, (uv_after_work_cb)RunCallback);
+      js_work* work = static_cast<js_work*>(req->data);
+      work->string_used = false;
 
-		Local<String> retstr = String::New("Running process initializer");
-		return scope.Close(retstr);
+      Handle<Value> argv[3];
 
-		//return Undefined();
-	}
+      // proper way to reenter the js world
+      switch(work->f) {
+         // Return Number
+         case 0:
+         case 1:
+         case 2:
+         case 3:
+         case 4:
+         case 11:
+         case 12:
+         case 13:
+            argv[0] = Integer::New(work->rn); // Return number value
+            argv[1] = Integer::New(work->f); // Return callback function
+            work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+            break;
+         // Return boolean
+         case 5:
+         case 7:
+         case 9:
+            argv[0] = Boolean::New(work->rb); // Return number value
+            argv[1] = Integer::New(work->f); // Return callback function
+            work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+            break;
+         // Return String
+         case 6:
+         case 8:
+         case 10:
+         case 14:
+            argv[0] = String::New(work->rs); // Return string value
+            argv[1] = Integer::New(work->f); // Return callback function
+            work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+            break;
+      }
+
+      // Check if we have an allocated string from telldus
+      if( work->string_used ) {
+         tdReleaseString(work->rs);
+      }
+
+      // properly cleanup, or death by millions of tiny leaks
+      work->callback.Dispose();
+      work->callback.Clear();
+
+      delete work;
+
+   }
+
+   /* the JS entry point */
+   Handle<Value> AsyncCaller(const Arguments& args) {
+      HandleScope scope;
+
+      if(!args[1]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      // Prepare string
+      v8::String::Utf8Value str(args[3]);
+      const char* cstr = ToCString(str);
+
+      js_work* work = new js_work;
+      work->f = args[0]->NumberValue(); // Worktype
+      work->devID = args[1]->NumberValue(); // Device ID
+      work->v = args[2]->NumberValue(); // Arbitrary number value
+      work->s = cstr; // Arbitrary string value
+
+      work->req.data = work;
+      work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[4]));
+
+      uv_queue_work(uv_default_loop(), &work->req, RunWork, (uv_after_work_cb)RunCallback);
+
+      Local<String> retstr = String::New("Running process initializer");
+      return scope.Close(retstr);
+
+      //return Undefined();
+   }
 
 }
 
 extern "C"
 void init(Handle<Object> target) {
 
-	HandleScope scope;
+   HandleScope scope;
 
-	target->Set(String::NewSymbol("AsyncCaller"),
-	  FunctionTemplate::New(telldus_v8::AsyncCaller)->GetFunction());
-	target->Set(String::NewSymbol("getNumberOfDevices"),
-	  FunctionTemplate::New(telldus_v8::getNumberOfDevices)->GetFunction());
-	target->Set(String::NewSymbol("getDevices"),
-	  FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
-	target->Set(String::NewSymbol("turnOn"),
-	  FunctionTemplate::New(telldus_v8::turnOn)->GetFunction());
-	target->Set(String::NewSymbol("turnOff"),
-	  FunctionTemplate::New(telldus_v8::turnOff)->GetFunction());
-	target->Set(String::NewSymbol("dim"),
-	  FunctionTemplate::New(telldus_v8::dim)->GetFunction());
-	target->Set(String::NewSymbol("learn"),
-	  FunctionTemplate::New(telldus_v8::learn)->GetFunction());
-	target->Set(String::NewSymbol("addDeviceEventListener"),
-	  FunctionTemplate::New(telldus_v8::addDeviceEventListener)->GetFunction());
-	target->Set(String::NewSymbol("addSensorEventListener"),
-	  FunctionTemplate::New(telldus_v8::addSensorEventListener)->GetFunction());
-	target->Set(String::NewSymbol("addRawDeviceEventListener"),
-	  FunctionTemplate::New(telldus_v8::addRawDeviceEventListener)->GetFunction());
-	target->Set(String::NewSymbol("removeEventListener"),
-	  FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
-	target->Set(String::NewSymbol("addDevice"),
-	  FunctionTemplate::New(telldus_v8::addDevice)->GetFunction());
+   target->Set(String::NewSymbol("AsyncCaller"),
+     FunctionTemplate::New(telldus_v8::AsyncCaller)->GetFunction());
+   target->Set(String::NewSymbol("getNumberOfDevices"),
+     FunctionTemplate::New(telldus_v8::getNumberOfDevices)->GetFunction());
+   target->Set(String::NewSymbol("getDevices"),
+     FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
+   target->Set(String::NewSymbol("turnOn"),
+     FunctionTemplate::New(telldus_v8::turnOn)->GetFunction());
+   target->Set(String::NewSymbol("turnOff"),
+     FunctionTemplate::New(telldus_v8::turnOff)->GetFunction());
+   target->Set(String::NewSymbol("dim"),
+     FunctionTemplate::New(telldus_v8::dim)->GetFunction());
+   target->Set(String::NewSymbol("learn"),
+     FunctionTemplate::New(telldus_v8::learn)->GetFunction());
+   target->Set(String::NewSymbol("addDeviceEventListener"),
+     FunctionTemplate::New(telldus_v8::addDeviceEventListener)->GetFunction());
+   target->Set(String::NewSymbol("addSensorEventListener"),
+     FunctionTemplate::New(telldus_v8::addSensorEventListener)->GetFunction());
+   target->Set(String::NewSymbol("addRawDeviceEventListener"),
+     FunctionTemplate::New(telldus_v8::addRawDeviceEventListener)->GetFunction());
+   target->Set(String::NewSymbol("removeEventListener"),
+     FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
+   target->Set(String::NewSymbol("addDevice"),
+     FunctionTemplate::New(telldus_v8::addDevice)->GetFunction());
 
-	target->Set(String::NewSymbol("getName"),
-	  FunctionTemplate::New(telldus_v8::getName)->GetFunction());
-	target->Set(String::NewSymbol("setName"),
-	  FunctionTemplate::New(telldus_v8::setName)->GetFunction());
+   target->Set(String::NewSymbol("getName"),
+     FunctionTemplate::New(telldus_v8::getName)->GetFunction());
+   target->Set(String::NewSymbol("setName"),
+     FunctionTemplate::New(telldus_v8::setName)->GetFunction());
 
-	target->Set(String::NewSymbol("getProtocol"),
-	  FunctionTemplate::New(telldus_v8::getProtocol)->GetFunction());
-	target->Set(String::NewSymbol("setProtocol"),
-	  FunctionTemplate::New(telldus_v8::setProtocol)->GetFunction());
+   target->Set(String::NewSymbol("getProtocol"),
+     FunctionTemplate::New(telldus_v8::getProtocol)->GetFunction());
+   target->Set(String::NewSymbol("setProtocol"),
+     FunctionTemplate::New(telldus_v8::setProtocol)->GetFunction());
 
-	target->Set(String::NewSymbol("getModel"),
-	  FunctionTemplate::New(telldus_v8::getModel)->GetFunction());
-	target->Set(String::NewSymbol("setModel"),
-	  FunctionTemplate::New(telldus_v8::setModel)->GetFunction());
+   target->Set(String::NewSymbol("getModel"),
+     FunctionTemplate::New(telldus_v8::getModel)->GetFunction());
+   target->Set(String::NewSymbol("setModel"),
+     FunctionTemplate::New(telldus_v8::setModel)->GetFunction());
 
-/*	target->Set(String::NewSymbol("myGetDeviceType"),
-	  FunctionTemplate::New(telldus_v8::myGetDeviceType)->GetFunction());
-	target->Set(String::NewSymbol("setType"),
-	  FunctionTemplate::New(telldus_v8::setType)->GetFunction());*/
+/* target->Set(String::NewSymbol("myGetDeviceType"),
+     FunctionTemplate::New(telldus_v8::myGetDeviceType)->GetFunction());
+   target->Set(String::NewSymbol("setType"),
+     FunctionTemplate::New(telldus_v8::setType)->GetFunction());*/
 
-/*	target->Set(String::NewSymbol("getDeviceParameter"),
-	  FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
-	target->Set(String::NewSymbol("setDeviceParameter"),
-	  FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());*/
+/* target->Set(String::NewSymbol("getDeviceParameter"),
+     FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
+   target->Set(String::NewSymbol("setDeviceParameter"),
+     FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());*/
 
-	target->Set(String::NewSymbol("removeDevice"),
-	  FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
-	target->Set(String::NewSymbol("getErrorString"),
-	  FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
+   target->Set(String::NewSymbol("removeDevice"),
+     FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
+   target->Set(String::NewSymbol("getErrorString"),
+     FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
 
  
 }
