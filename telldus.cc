@@ -266,7 +266,7 @@ namespace telldus_v8 {
 		v8::String::Utf8Value str(args[1]);
 		const char* cstr = ToCString(str);
 		
-		Local<Number> num = Number::New(tdSetName(args[0]->NumberValue(), cstr ));
+		Handle<Boolean> num = Boolean::New(tdSetName(args[0]->IntegerValue(), cstr ));
 		return scope.Close(num);
 	}
 	
@@ -295,7 +295,7 @@ namespace telldus_v8 {
 		v8::String::Utf8Value str(args[1]);
 		const char* cstr = ToCString(str);
 		
-		Local<Number> num = Number::New(tdSetProtocol(args[0]->NumberValue(), cstr ));
+		Handle<Boolean> num = Boolean::New(tdSetProtocol(args[0]->IntegerValue(), cstr ));
 		return scope.Close(num);
 	}
 	
@@ -324,7 +324,7 @@ namespace telldus_v8 {
 		v8::String::Utf8Value str(args[1]);
 		const char* cstr = ToCString(str);
 		
-		Local<Number> num = Number::New(tdSetModel(args[0]->NumberValue(), cstr ));
+		Handle<Boolean> num = Boolean::New(tdSetModel(args[0]->NumberValue(), cstr ));
 		return scope.Close(num);
 	}
 	
@@ -549,6 +549,7 @@ namespace telldus_v8 {
 		uv_work_t req;
 		Persistent<Function> callback;
 		//char* data;
+		bool rb; // Return value, boolean
 		int rn; // Return value, number
 		char* rs; // Return value, string
 
@@ -579,21 +580,21 @@ namespace telldus_v8 {
 				work->rn = tdAddDevice();
 				break;
 			case 5: // SetName
-				work->rn = tdSetName(work->devID,work->s);
+				work->rb = tdSetName(work->devID,work->s);
 				break;
 			case 6: // GetName
 				work->rs = tdGetName(work->devID);
 				work->string_used = true;
 				break;
 			case 7: // SetProtocol
-				work->rn = tdSetProtocol(work->devID,work->s);
+				work->rb = tdSetProtocol(work->devID,work->s);
 				break;
 			case 8: // GetProtocol
 				work->rs = tdGetProtocol(work->devID);
 				work->string_used = true;
 				break;
 			case 9: // SetModel
-				work->rn = tdSetModel(work->devID,work->s);
+				work->rb = tdSetModel(work->devID,work->s);
 				break;
 			case 10: // GetModel
 				work->rs = tdGetModel(work->devID);
@@ -632,13 +633,18 @@ namespace telldus_v8 {
 			case 2:
 			case 3:
 			case 4:
-			case 5:
-			case 7:
-			case 9:
 			case 11:
 			case 12:
 			case 13:
 				argv[0] = Integer::New(work->rn); // Return number value
+				argv[1] = Integer::New(work->f); // Return callback function
+				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+				break;
+			// Return boolean
+			case 5:
+			case 7:
+			case 9:
+				argv[0] = Boolean::New(work->rb); // Return number value
 				argv[1] = Integer::New(work->f); // Return callback function
 				work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
 				break;
