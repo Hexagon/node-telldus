@@ -58,7 +58,7 @@ var TELLDUS_SUCCESS=0;
 	 *
 	 * @callback requestCallback
 	 * @param {Objecj|null} err - Error object or null
-	 * @param {...*} [args] - Different arguments depinging on method.
+	 * @param {...*} [args] - Different optional arguments depending on method.
 	 */
 
 
@@ -74,25 +74,20 @@ var TELLDUS_SUCCESS=0;
 		return telldus.AsyncCaller(worktype, id, num, str, function(result){
 			var rtype = typeof result;
 			if(typeof callback !== 'function'){
-				console.log("callback is not a function", callback);
 				callback = function(){};
 			}
 
-			//console.log("rtype:%j, result:%j", rtype, result);
 			//did we get a number as first value?
 			if(rtype === 'number'){
 				//assume it represents an error code if <>0
 				if(result !== TELLDUS_SUCCESS){				
-					//console.log("was error");
 					//get the description
 					exports.getErrorString(result, function(err, description){
-						//console.log("got error err:%j, desc:%j", err, description);
 						if(err){
 							//could not get description for this. return a generic one.
 							return callback(new Error('Undefined telldus error:' + result));
 						}
 						//return error with description
-						//console.log("returning callback");
 						return callback(new Error(description));
 					});
 				}
@@ -111,6 +106,10 @@ var TELLDUS_SUCCESS=0;
 				//all arguments are ok.
 				var args = [null].concat(Array.prototype.slice.call(arguments, 0));
 				return callback.apply(undefined, args);
+			}
+			else if (rtype === 'boolean'){
+				var e = result ? null : new Error('Operation failed!');
+				return callback(e);
 			}
 			else {
 				//can't do much about it. send as is

@@ -170,11 +170,49 @@ describe("telldus library should", function () {
 
     it('setName', function(done){
       telldus.setName(deviceId, 'Newly created2', function(err){
+        should.not.exist(err);
         var name = telldus.getNameSync(deviceId);
         name.should.equal('Newly created2');
         done(err);
       });
     });
+
+
+    it('getProtocolSync', function(){
+      var p = telldus.getProtocolSync(deviceId);
+      p.should.equal('');
+    });
+
+
+    it('getProtocol', function(done){
+      telldus.getProtocol(deviceId, function(err, p){
+        should.exist(err);
+        err.should.have.property('message', 'Nothing to get!');
+        should.not.exist(p);
+        done();
+      });
+    });
+
+
+    it('setProtocol', function (done) {
+      telldus.setProtocol(deviceId, 'arctech', function(err){
+        should.not.exist(err, "setProtocol failed");
+
+        var p = telldus.getProtocolSync(deviceId);
+        p.should.equal('artech');
+
+        done(err);
+      });
+    });
+
+
+    it('setProtocolSync', function (done) {
+      var result = telldus.setProtocolSync(deviceId, 'arctech');
+      result.should.be.true;
+      var p = telldus.getProtocolSync(deviceId);
+      p.should.equal('artech');
+    });
+
   });//end with a device
 
   describe("support switches", function(){
@@ -309,7 +347,7 @@ describe("telldus library should", function () {
       setTimeout(function () {
         var returnValue = telldus.removeEventListenerSync(listener);
         var msg = telldus.getErrorStringSync(returnValue);
-        returnValue.should.equal(0, "removeEventListener failed with '" + msg + "'"  );
+        returnValue.should.equal(0, "removeEventListenerSync failed with '" + msg + "'"  );
         //we should have 1 event
         count.should.be.equal(1);
         done(); //consider the test done
