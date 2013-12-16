@@ -1,5 +1,5 @@
 var telldus = require('./build/Release/telldus');
-
+var errors = require('./lib/errors');
 var TELLDUS_SUCCESS=0;
 
 (function (exports, global) {
@@ -57,7 +57,7 @@ var TELLDUS_SUCCESS=0;
 	 * Callback signature
 	 *
 	 * @callback requestCallback
-	 * @param {Objecj|null} err - Error object or null
+	 * @param {Objecj|null} err - TelldusError object or null
 	 * @param {...*} [args] - Different optional arguments depending on method.
 	 */
 
@@ -76,7 +76,6 @@ var TELLDUS_SUCCESS=0;
 			if(typeof callback !== 'function'){
 				callback = function(){};
 			}
-
 			//did we get a number as first value?
 			if(rtype === 'number'){
 				//assume it represents an error code if <>0
@@ -85,10 +84,10 @@ var TELLDUS_SUCCESS=0;
 					exports.getErrorString(result, function(err, description){
 						if(err){
 							//could not get description for this. return a generic one.
-							return callback(new Error('Undefined telldus error:' + result));
+							return callback(new errors.TelldusError({code:result, message:'Undefined telldus error:' + result}));
 						}
 						//return error with description
-						return callback(new Error(description));
+						return callback(new errors.TelldusError({code:result, message:description}));
 					});
 				}
 				else{
@@ -101,14 +100,14 @@ var TELLDUS_SUCCESS=0;
 			//was the first one a string..
 			else if (rtype === 'string'){
 				if(result === ''){
-					return callback(new Error('Nothing to get!'));
+					return callback(new errors.TelldusError({code:result, message:'Nothing to get!'}));
 				}
 				//all arguments are ok.
 				var args = [null].concat(Array.prototype.slice.call(arguments, 0));
 				return callback.apply(undefined, args);
 			}
 			else if (rtype === 'boolean'){
-				var e = result ? null : new Error('Operation failed!');
+				var e = result ? null : new errors.TelldusError({code:result, message:'Operation failed!'});
 				return callback(e);
 			}
 			else {

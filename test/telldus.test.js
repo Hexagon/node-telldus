@@ -5,9 +5,15 @@ var assert = require('assert')
   , should = require('should')
   , util = require('util');
 
+
+var telldus = require('..');
+var errors = require('../lib/errors');
+
 var SOME_REALLY_BIG_NUMBER = 100;
 var NON_EXISTING_DEVICE=999;
-var telldus = require('..');
+
+var VALID_PROTOCOL='arctech';
+
 
 /* 
  * for this test to work there must be a running
@@ -67,6 +73,10 @@ describe("telldus library should", function () {
 
 
   after(function(){
+    //if you do not wan't cleanup of any created devices
+    //in tellstick.conf uncomment the next line
+    //return;
+
     var id, i, j, d, found, newDeviceList;
     newDeviceList = telldus.getDevicesSync();
 
@@ -97,6 +107,7 @@ describe("telldus library should", function () {
     }
   });
 
+
   it("getDevicesSync", function () {
     var devices = this.devices;
     
@@ -126,13 +137,14 @@ describe("telldus library should", function () {
     methods.should.include('TURNOFF');
   });
 
+
   it('addDeviceSync', function(){
     var id = telldus.addDeviceSync();
     id.should.be.above(0);
   });
 
 
-  describe('with a device', function(){
+  describe('with a device be able to', function(){
     var deviceId;
 
     
@@ -145,10 +157,12 @@ describe("telldus library should", function () {
     });
 
 
-    it('getName', function(done){
+    it('getName with proper error', function(done){
       telldus.getName(deviceId, function(err, name){
         should.exist(err);
+        err.should.be.an.instanceOf(errors.TelldusError);
         err.should.have.property('message', 'Nothing to get!');
+        err.should.have.property('code', '');
         done();
       });
     });
@@ -172,8 +186,18 @@ describe("telldus library should", function () {
       telldus.setName(deviceId, 'Newly created2', function(err){
         should.not.exist(err);
         var name = telldus.getNameSync(deviceId);
-        name.should.equal('Newly created2');
+        name.should.equal('Newly created2', 'setName did not fail but can not get new values');
         done(err);
+      });
+    });
+
+
+    it('getName', function(done){
+      telldus.setNameSync(deviceId, 'Newly created3');
+      telldus.getName(deviceId, function(err, name){
+        should.not.exist(err);
+        name.should.equal('Newly created3');
+        done();
       });
     });
 
@@ -195,11 +219,11 @@ describe("telldus library should", function () {
 
 
     it('setProtocol', function (done) {
-      telldus.setProtocol(deviceId, 'arctech', function(err){
+      telldus.setProtocol(deviceId, VALID_PROTOCOL, function(err){
         should.not.exist(err, "setProtocol failed");
 
         var p = telldus.getProtocolSync(deviceId);
-        p.should.equal('artech');
+        p.should.equal(VALID_PROTOCOL, 'setProtocol did not fail but can not get new values');
 
         done(err);
       });
@@ -207,15 +231,17 @@ describe("telldus library should", function () {
 
 
     it('setProtocolSync', function (done) {
-      var result = telldus.setProtocolSync(deviceId, 'arctech');
+      var result = telldus.setProtocolSync(deviceId, VALID_PROTOCOL);
       result.should.be.true;
       var p = telldus.getProtocolSync(deviceId);
-      p.should.equal('artech');
+      p.should.equal(VALID_PROTOCOL);
     });
 
   });//end with a device
 
+
   describe("support switches", function(){
+
 
     it('turnOff', function(done) {    
       var device = this.devices[0];
@@ -259,6 +285,7 @@ describe("telldus library should", function () {
       device = telldus.getDevicesSync()[0];
       device.status.should.have.property('status', 'ON');
     });
+
 
     it('turnOn not existing should generate err', function(done){
       telldus.turnOn(NON_EXISTING_DEVICE,function(err){
