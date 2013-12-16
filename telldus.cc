@@ -61,7 +61,7 @@ namespace telldus_v8 {
 
    Handle<Value> getNumberOfDevices( const Arguments& args ) {
       HandleScope scope;
-      //tdInit();
+
       Local<Number> num = Number::New(tdGetNumberOfDevices());
       return scope.Close(num);
    }
@@ -184,7 +184,6 @@ namespace telldus_v8 {
 
    Handle<Value> getDevices( const Arguments& args ) {
       HandleScope scope;
-      tdInit();
 
       int intNumberOfDevices = tdGetNumberOfDevices();
       Local<Array> devices = Array::New(intNumberOfDevices);
@@ -613,6 +612,14 @@ namespace telldus_v8 {
             work->rs = tdGetErrorString(work->devID);
             work->string_used = true;
             break;
+          case 15: // tdInit();
+            tdInit();
+            work->rb = true; // tdInit() has no return value, so we augment true for a return value
+            break;
+          case 16: // tdClose();
+            tdClose();
+            work->rb = true; // tdClose() has no return value, so we augment true for a return value
+            break;
       }
 
 
@@ -644,6 +651,8 @@ namespace telldus_v8 {
          case 5:
          case 7:
          case 9:
+         case 15:
+         case 16:
             argv[0] = Boolean::New(work->rb); // Return number value
             argv[1] = Integer::New(work->f); // Return callback function
             work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
