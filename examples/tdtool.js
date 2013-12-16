@@ -1,6 +1,6 @@
 var telldus = require('..');
 var i;
-var devices = telldus.getDevices();
+var devices = telldus.getDevicesSync();
 
 var DEVICE_PARAM=3
 var CMD_PARAM=2;
@@ -23,10 +23,10 @@ function checkAndSet(method, device){
 	if(device.methods.indexOf(method) > -1){
 		console.log("%s for %s", method, device.name);
 		if(method==='TURNON'){
-			telldus.turnOn(device.id);
+			telldus.turnOnSync(device.id);
 		}
 		else if(method==='TURNOFF'){
-			telldus.turnOff(device.id);
+			telldus.turnOffSync(device.id);
 		}
 	}
 	else {

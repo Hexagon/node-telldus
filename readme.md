@@ -38,6 +38,11 @@ var telldus = require('telldus');
 var devices = telldus.getDevicesSync();
 ```
 
+If you ever get a returnValue from a method like turnOnSync that is 
+not equal to 0 (TELLDUS_SUCCESS) you could check what type of error
+that is using telldus.getErrorString.
+
+
 ---
 
 API
@@ -82,7 +87,7 @@ Synchronous version: ```javascript var returnValue = turnOnSync(deviceId);```
 Signature:
 
 ```javascript
-telldus.turnOn(deviceId,function(returnValue) {
+telldus.turnOn(deviceId,function(err) {
 	console.log('deviceId is now ON');
 });
 ```
@@ -104,7 +109,7 @@ Synchronous version: ```var returnValue = turnOffSync(deviceId);```
 Signature:
 
 ```javascript
-telldus.turnOff(deviceId,function(returnValue) {
+telldus.turnOff(deviceId,function(err) {
 	console.log('Device' + deviceId + ' is now OFF');
 });
 ```
@@ -126,7 +131,7 @@ Synchronous version: ```javascript var returnValue = dimSync(deviceId,level);```
 Signature:
 
 ```javascript
-telldus.dim(deviceId, level,function(returnValue) {
+telldus.dim(deviceId, level,function(err) {
 	console.log('Device ' + deviceId + ' is now dimmed to level ' + level);
 });
 ```
@@ -195,7 +200,7 @@ Synchronous version: ```javascript var returnValue = telldus.removeEventListener
 Signature:
 
 ```javascript
-telldus.removeEventListener(listener,function(returnValue) {});
+telldus.removeEventListener(listener,function(err) {});
 ```
 
 
@@ -209,17 +214,14 @@ Synchronous version: ```javascript var errStr = telldus.getErrorStringSync(retur
 Signature:
 
 ```javascript
-telldus.turnOn(deviceId,function(returnValue) {
-	telldus.getErrorString(returnValue,function (errStr) {
-		if( errStr == 'Success' ) {
-			console.log(deviceId + ' is now ON');
-			process.exit(0);
-		} else {
-			console.error('turnOn failed for device ' + deviceId + ', error: ' + errStr);
-			process.exit(0);
-		}
-	});
-});
+  var returnValue = telldus.turnOnSync(deviceId);
+  if(returnValue > 0) {
+  	telldus.getErrorString(returnValue, function (err, errStr) {
+  		console.error('turnOn failed for device ' + deviceId + ', error: ' + errStr);
+  		process.exit(0);
+  	});
+  }
+
 ```
 
 
