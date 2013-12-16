@@ -632,8 +632,15 @@ namespace telldus_v8 {
 
       Handle<Value> argv[3];
 
-      // proper way to reenter the js world
+
+      // This makes it possible to catch
+      // the exception from JavaScript land using the
+      // process.on('uncaughtException') event.
+      TryCatch try_catch;
+
+      // Reenter the js-world
       switch(work->f) {
+
          // Return Number
          case 0:
          case 1:
@@ -644,9 +651,12 @@ namespace telldus_v8 {
          case 12:
          case 13:
             argv[0] = Integer::New(work->rn); // Return number value
-            argv[1] = Integer::New(work->f); // Return callback function
+            argv[1] = Integer::New(work->f); // Return worktype
+
             work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+
             break;
+
          // Return boolean
          case 5:
          case 7:
@@ -654,9 +664,12 @@ namespace telldus_v8 {
          case 15:
          case 16:
             argv[0] = Boolean::New(work->rb); // Return number value
-            argv[1] = Integer::New(work->f); // Return callback function
+            argv[1] = Integer::New(work->f); // Return worktype
+
             work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+
             break;
+
          // Return String
          case 6:
          case 8:
@@ -664,8 +677,15 @@ namespace telldus_v8 {
          case 14:
             argv[0] = String::New(work->rs); // Return string value
             argv[1] = Integer::New(work->f); // Return callback function
+
             work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+
             break;
+      }
+
+      // Handle any exceptions thrown inside the callback
+      if (try_catch.HasCaught()) {
+        node::FatalException(try_catch);
       }
 
       // Check if we have an allocated string from telldus
