@@ -29,10 +29,10 @@ var TELLDUS_SUCCESS=0;
 	exports.removeDevice = function(id, callback) { return nodeAsyncCaller(12, id, 0, '', callback); };
 	exports.removeEventListener = function(id, callback) { return nodeAsyncCaller(13, id, 0, '', callback); };
 	exports.getErrorString = function(id, callback) { return nodeAsyncCaller(14, id, 0, '', callback); };
-	exports.getNumberOfDevices = function(callback) { return nodeAsyncCaller(17, 0, 0, "", callback); }
-	exports.stop = function(id, callback) { return nodeAsyncCaller(18, id, 0, "", callback); }
-	exports.bell = function(id, callback) { return nodeAsyncCaller(19, id, 0, "", callback); }
-	exports.getDeviceId = function(id, callback) { return nodeAsyncCaller(20, id, 0, "", callback); }
+	exports.getNumberOfDevices = function(callback) { return nodeAsyncCaller(17, 0, 0, '', callback); }
+	exports.stop = function(id, callback) { return nodeAsyncCaller(18, id, 0, '', callback); }
+	exports.bell = function(id, callback) { return nodeAsyncCaller(19, id, 0, '', callback); }
+	exports.getDeviceId = function(id, callback) { return nodeAsyncCaller(20, id, 0, '', callback); }
 
 	// Sync versions
 	exports.turnOnSync = function(id) { return telldus.turnOn(id); };
