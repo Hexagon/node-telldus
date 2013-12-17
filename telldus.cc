@@ -66,7 +66,7 @@ namespace telldus_v8 {
       return scope.Close(num);
    }
 
-   Local<Object> GetSuportedMethods(int id){
+   Local<Object> GetSupportedMethods(int id){
 
       int methods = tdMethods( id, SUPPORTED_METHODS );
       Local<Array> methodsObj = Array::New();
@@ -171,7 +171,7 @@ namespace telldus_v8 {
       Local<Object> obj = Object::New();
       obj->Set(String::NewSymbol("name"), String::New(name, strlen(name)));
       obj->Set(String::NewSymbol("id"), Number::New(id));
-      obj->Set(String::NewSymbol("methods"), GetSuportedMethods(id));
+      obj->Set(String::NewSymbol("methods"), GetSupportedMethods(id));
       obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
       obj->Set(String::NewSymbol("type"), GetDeviceType(id));
       obj->Set(String::NewSymbol("status"), GetDeviceStatus(id));
@@ -194,6 +194,16 @@ namespace telldus_v8 {
       return scope.Close(devices);
    }
 
+   Handle<Value> getDeviceId( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdGetDeviceId(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
    Handle<Value> turnOn( const Arguments& args ) {
       HandleScope scope;
       if (!args[0]->IsNumber()) {
@@ -201,6 +211,26 @@ namespace telldus_v8 {
       }
 
       Local<Number> num = Number::New(tdTurnOn(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
+   Handle<Value> bell( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdBell(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
+   Handle<Value> stop( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdStop(args[0]->NumberValue()));
       return scope.Close(num);
    }
 
@@ -620,6 +650,18 @@ namespace telldus_v8 {
             tdClose();
             work->rb = true; // tdClose() has no return value, so we augment true for a return value
             break;
+          case 17: // tdGetNumberOfDevices();
+            work->rn = tdGetNumberOfDevices();
+            break;
+          case 18: // tdStop
+            work->rn = tdStop(work->devID);
+            break;
+          case 19: // tdBell
+            work->rn = tdBell(work->devID);
+            break;     
+          case 20: // tdGetDeviceId(deviceIndex)
+            work->rn = tdGetDeviceId(work->devID);
+            break;    
       }
 
 
@@ -650,6 +692,10 @@ namespace telldus_v8 {
          case 11:
          case 12:
          case 13:
+         case 17:
+         case 18:
+         case 19:
+         case 20:
             argv[0] = Integer::New(work->rn); // Return number value
             argv[1] = Integer::New(work->f); // Return worktype
 
@@ -748,6 +794,10 @@ void init(Handle<Object> target) {
      FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
    target->Set(String::NewSymbol("turnOn"),
      FunctionTemplate::New(telldus_v8::turnOn)->GetFunction());
+   target->Set(String::NewSymbol("stop"),
+     FunctionTemplate::New(telldus_v8::stop)->GetFunction());
+   target->Set(String::NewSymbol("bell"),
+     FunctionTemplate::New(telldus_v8::bell)->GetFunction());
    target->Set(String::NewSymbol("turnOff"),
      FunctionTemplate::New(telldus_v8::turnOff)->GetFunction());
    target->Set(String::NewSymbol("dim"),

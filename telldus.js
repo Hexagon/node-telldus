@@ -29,7 +29,11 @@ var TELLDUS_SUCCESS=0;
 	exports.removeDevice = function(id, callback) { return nodeAsyncCaller(12, id, 0, '', callback); };
 	exports.removeEventListener = function(id, callback) { return nodeAsyncCaller(13, id, 0, '', callback); };
 	exports.getErrorString = function(id, callback) { return nodeAsyncCaller(14, id, 0, '', callback); };
-	
+	exports.getNumberOfDevices = function(callback) { return nodeAsyncCaller(17, 0, 0, "", callback); }
+	exports.stop = function(id, callback) { return nodeAsyncCaller(18, id, 0, "", callback); }
+	exports.bell = function(id, callback) { return nodeAsyncCaller(19, id, 0, "", callback); }
+	exports.getDeviceId = function(id, callback) { return nodeAsyncCaller(20, id, 0, "", callback); }
+
 	// Sync versions
 	exports.turnOnSync = function(id) { return telldus.turnOn(id); };
 	exports.turnOffSync = function(id) { return telldus.turnOff(id); };
@@ -46,9 +50,12 @@ var TELLDUS_SUCCESS=0;
 	exports.removeDeviceSync = function(id) { return telldus.removeDevice(id); };
 	exports.removeEventListenerSync = function(id) { return telldus.removeEventListener(id); };
 	exports.getErrorStringSync = function(id) { return telldus.getErrorString(id); };
+	exports.getNumberOfDevicesAsync = function() { return telldus.getNumberOfDevices(); };
+	exports.stopSync = function(id) { return telldus.stop(id); };
+	exports.bellSync = function(id) { return telldus.bell(id); };
+	exports.getDeviceIdSync = function(id) { return telldus.getDeviceId(id); };
 
 	// Not yet supported
-	//  exports.setDeviceType = function(id, protocol) { return telldus.setDeviceType(id, protocol); };
 	//exports.setDeviceParameterSync = function(id, name, val) { return telldus.setDeviceParameter(id, name, val); };
 	//exports.getDeviceParameterSync = function(id, name, val) { return telldus.getDeviceParameter(id, name, val); };
 
