@@ -81,14 +81,8 @@ var TELLDUS_SUCCESS=0;
 				//assume it represents an error code if <>0
 				if(result !== TELLDUS_SUCCESS){				
 					//get the description
-					exports.getErrorString(result, function(err, description){
-						if(err){
-							//could not get description for this. return a generic one.
-							return callback(new errors.TelldusError({code:result, message:'Undefined telldus error:' + result}));
-						}
-						//return error with description
-						return callback(new errors.TelldusError({code:result, message:description}));
-					});
+					description = exports.getErrorStringSync(result);
+					return callback(new errors.TelldusError({code:result, message:description}));
 				}
 				else{
 					//no error, first argument to callback should be null,
