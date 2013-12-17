@@ -1,9 +1,7 @@
-/*global describe, it, before */
+/*global describe, it, before, after */
 /*jshint laxcomma:true, node:true */
-"use strict";
-var assert = require('assert')
-  , should = require('should')
-  , util = require('util');
+'use strict';
+var should = require('should');
 
 
 var telldus = require('..');
@@ -22,27 +20,27 @@ var VALID_PROTOCOL='arctech';
 */
 /* example of a working config for these tests
 
-user = "nobody"
-group = "plugdev"
-ignoreControllerConfirmation = "false"
+user = 'nobody'
+group = 'plugdev'
+ignoreControllerConfirmation = 'false'
 device {
   id = 1
-  name = "Example device"
-  protocol = "arctech"
-  model = "codeswitch"
+  name = 'Example device'
+  protocol = 'arctech'
+  model = 'codeswitch'
   parameters {
-    house = "A"
-    unit = "1"
+    house = 'A'
+    unit = '1'
   }
 }
 device {
   id = 2
-  name = "Nexa LKCT-614 Remote"
-  protocol = "arctech"
-  model = "selflearning"
+  name = 'Nexa LKCT-614 Remote'
+  protocol = 'arctech'
+  model = 'selflearning'
   parameters {
-    house = "11790353"
-    unit = "1"
+    house = '11790353'
+    unit = '1'
   }
 }
 
@@ -64,7 +62,7 @@ function parseRaw(data) {
 }
 
 
-describe("telldus library should", function () {
+describe('telldus library should', function () {
 
 
   before(function () {
@@ -77,7 +75,7 @@ describe("telldus library should", function () {
     //in tellstick.conf uncomment the next line
     //return;
 
-    var id, i, j, d, found, newDeviceList;
+    var i, j, d, found, newDeviceList;
     newDeviceList = telldus.getDevicesSync();
 
     //remove all devices that weren't there to 
@@ -87,19 +85,19 @@ describe("telldus library should", function () {
       found=false;
       for(j=0; j<this.devices.length; j++) {
         if(d.id === this.devices[j].id){
-          //console.log("%s existed", d.id);
+          //console.log('%s existed', d.id);
           found=true;
         }
       }
       if(!found){
-        //console.log("%s is to be removed", d.id);
+        //console.log('%s is to be removed', d.id);
         if(d.id>0){
           try {
             telldus.removeDeviceSync(d.id);
-            //console.log("%s is removed", d.id);
+            //console.log('%s is removed', d.id);
           }
           catch (ex){
-            console.log("Could not remove device %s, %s", d.id, ex);
+            console.log('Could not remove device %s, %s', d.id, ex);
 
           }
         }
@@ -108,7 +106,7 @@ describe("telldus library should", function () {
   });
 
 
-  it("getDevicesSync", function () {
+  it('getDevicesSync', function () {
     var devices = this.devices;
     
     //if devices is zero length then 
@@ -117,7 +115,7 @@ describe("telldus library should", function () {
     
     //set the environment variable VERBOSE to something if 
     //you want to output the devices
-    if(typeof process.env['VERBOSE'] != 'undefined'){
+    if(typeof process.env.VERBOSE !== 'undefined'){
       console.log(devices);
     }
 
@@ -176,7 +174,7 @@ describe("telldus library should", function () {
 
       it('setProtocolSync', function () {
         var result = telldus.setProtocolSync(deviceId, VALID_PROTOCOL);
-        result.should.be.true;
+        result.should.be.equal(true);
         var p = telldus.getProtocolSync(deviceId); //now it should have
         p.should.equal(VALID_PROTOCOL);
       });
@@ -189,7 +187,7 @@ describe("telldus library should", function () {
 
 
       before(function(){
-         deviceId = telldus.addDeviceSync();
+        deviceId = telldus.addDeviceSync();
       });
 
 
@@ -209,6 +207,7 @@ describe("telldus library should", function () {
           err.should.be.an.instanceOf(errors.TelldusError);
           err.should.have.property('message', 'Nothing to get!');
           err.should.have.property('code', '');
+          should.not.exist(name);
           done();
         });
       });
@@ -250,7 +249,7 @@ describe("telldus library should", function () {
 
       it('setProtocol', function (done) {
         telldus.setProtocol(deviceId, VALID_PROTOCOL, function(err){
-          should.not.exist(err, "setProtocol failed");
+          should.not.exist(err, 'setProtocol failed');
 
           var p = telldus.getProtocolSync(deviceId);
           p.should.equal(VALID_PROTOCOL, 'setProtocol did not fail but can not get new values');
@@ -264,7 +263,7 @@ describe("telldus library should", function () {
   });//end with a device
 
 
-  describe("support switches", function(){
+  describe('support switches', function(){
 
 
     it('turnOff', function(done) {    
@@ -315,7 +314,7 @@ describe("telldus library should", function () {
       telldus.turnOn(NON_EXISTING_DEVICE,function(err){
         should.exist(err);
         err.should.have.property('message');
-        err.message.should.be.equal("Device not found");
+        err.message.should.be.equal('Device not found');
         done();
       });
     });
@@ -328,9 +327,9 @@ describe("telldus library should", function () {
      * to generate at least 1 event during each test.
      * That could be you pushing a remote.
      */
-    it("using rawDeviceEventListener", function (done) {
+    it('using rawDeviceEventListener', function (done) {
       var seconds = 5; //for how many seconds should we wait for an event
-      console.log("\nWaiting", seconds, "seconds for some raw events.\nPlease trigger something.");
+      console.log('\nWaiting', seconds, 'seconds for some raw events.\nPlease trigger something.');
       var received = [];
       this.timeout(seconds*1000+1000); //increase the test timeout
       
@@ -340,7 +339,7 @@ describe("telldus library should", function () {
         should.exist(data);
         //set the environment variable VERBOSE to something if 
         //you want to output the received data
-        if(typeof process.env['VERBOSE'] !== 'undefined' ){
+        if(typeof process.env.VERBOSE !== 'undefined' ){
           console.log(data);
         }
         //do some tests
@@ -375,15 +374,15 @@ describe("telldus library should", function () {
     });//it should listen
 
 
-    it("deviceEventListener", function (done) {
+    it('deviceEventListener', function (done) {
       var seconds = 2; // for how many seconds should we wait for an aevent
       this.timeout(seconds * 1000 + 1000);
       var count = 0;
       
       //listen and wait for something
       var listener = telldus.addDeviceEventListener( function (deviceId, evt) {
-        if(typeof process.env['VERBOSE'] !== 'undefined' ){
-          console.log("device:%s, event:%j", deviceId, evt);
+        if(typeof process.env.VERBOSE !== 'undefined' ){
+          console.log('device:%s, event:%j', deviceId, evt);
         }
         deviceId.should.be.above(0);
         evt.should.have.property('status', 'ON'); 
@@ -398,7 +397,7 @@ describe("telldus library should", function () {
       setTimeout(function () {
         var returnValue = telldus.removeEventListenerSync(listener);
         var msg = telldus.getErrorStringSync(returnValue);
-        returnValue.should.equal(0, "removeEventListenerSync failed with '" + msg + "'"  );
+        returnValue.should.equal(0, 'removeEventListenerSync failed with "' + msg + '"'  );
         //we should have 1 event
         count.should.be.equal(1);
         done(); //consider the test done
