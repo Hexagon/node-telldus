@@ -555,7 +555,7 @@ namespace telldus_v8 {
       int f; // Worktype
       int devID; // Device ID
       int v; // Arbitrary number value
-      const char* s; // Arbitrary string value
+      char* s; // Arbitrary string value
       bool string_used;
 
    };
@@ -697,27 +697,31 @@ namespace telldus_v8 {
       work->callback.Dispose();
       work->callback.Clear();
 
+      free(work->s); // char* Created in AsyncCaller
       delete work;
 
    }
 
    /* the JS entry point */
    Handle<Value> AsyncCaller(const Arguments& args) {
+
       HandleScope scope;
 
-      if(!args[1]->IsNumber()) {
+      // Make sure we don't get any funky data
+      if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString()) {
          return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
       }
 
-      // Prepare string
-      v8::String::Utf8Value str(args[3]);
-      const char* cstr = ToCString(str);
+      // Make a deep copy of the string argument as we don't want 
+      // it memory managed by v8 in the worker thread
+      String::Utf8Value str(args[3]);
+      char * str_copy = strdup(*str); // Deleted at end of RunCallback
 
       js_work* work = new js_work;
       work->f = args[0]->NumberValue(); // Worktype
       work->devID = args[1]->NumberValue(); // Device ID
       work->v = args[2]->NumberValue(); // Arbitrary number value
-      work->s = cstr; // Arbitrary string value
+      work->s = str_copy; // Arbitrary string value
 
       work->req.data = work;
       work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[4]));
@@ -727,7 +731,6 @@ namespace telldus_v8 {
       Local<String> retstr = String::New("Running process initializer");
       return scope.Close(retstr);
 
-      //return Undefined();
    }
 
 }
