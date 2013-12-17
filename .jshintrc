@@ -10,6 +10,7 @@
 	"latedef": "nofunc",
 	"quotmark": true,
 	"trailing": true,
+	"white": true,
 
 
 	"curly": true
