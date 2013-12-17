@@ -697,7 +697,7 @@ namespace telldus_v8 {
       work->callback.Dispose();
       work->callback.Clear();
 
-      free(work->s); // const char* Created in AsyncCaller
+      free(work->s); // char* Created in AsyncCaller
       delete work;
 
    }
