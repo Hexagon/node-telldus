@@ -1,3 +1,4 @@
+'use strict';
 var telldus = require('./build/Release/telldus');
 var errors = require('./lib/errors');
 var TELLDUS_SUCCESS=0;
@@ -13,21 +14,21 @@ var TELLDUS_SUCCESS=0;
 	exports.getDevicesSync = function() { return telldus.getDevices(); };
 
 	// Async versions
-	exports.turnOn = function(id, callback) { return nodeAsyncCaller(0, id, 0, "", callback); };
-	exports.turnOff = function(id, callback) { return nodeAsyncCaller(1, id, 0, "", callback); };
-	exports.dim = function(id, levl, callback) { return nodeAsyncCaller(2, id, levl, "", callback); };
-	exports.learn = function(id, callback) { return nodeAsyncCaller(3, id, 0, "", callback); };
-	exports.addDevice = function(callback) { return nodeAsyncCaller(4, 0, 0, "", callback); };
+	exports.turnOn = function(id, callback) { return nodeAsyncCaller(0, id, 0, '', callback); };
+	exports.turnOff = function(id, callback) { return nodeAsyncCaller(1, id, 0, '', callback); };
+	exports.dim = function(id, levl, callback) { return nodeAsyncCaller(2, id, levl, '', callback); };
+	exports.learn = function(id, callback) { return nodeAsyncCaller(3, id, 0, '', callback); };
+	exports.addDevice = function(callback) { return nodeAsyncCaller(4, 0, 0, '', callback); };
 	exports.setName = function(id, name, callback) { return nodeAsyncCaller(5, id, 0, name, callback); };
-	exports.getName = function(id, callback) { return nodeAsyncCaller(6, id, 0, "", callback); };
+	exports.getName = function(id, callback) { return nodeAsyncCaller(6, id, 0, '', callback); };
 	exports.setProtocol = function(id, name, callback) { return nodeAsyncCaller(7, id, 0, name, callback); };
-	exports.getProtocol = function(id, callback) { return nodeAsyncCaller(8, id, 0, "", callback); };
+	exports.getProtocol = function(id, callback) { return nodeAsyncCaller(8, id, 0, '', callback); };
 	exports.setModel = function(id, name, callback) { return nodeAsyncCaller(9, id, 0, name, callback); };
-	exports.getModel = function(id, callback) { return nodeAsyncCaller(10, id, 0, "", callback); };
-	exports.getDeviceType = function(id, callback) { return nodeAsyncCaller(11, id, 0, "", callback); };
-	exports.removeDevice = function(id, callback) { return nodeAsyncCaller(12, id, 0, "", callback); };
-	exports.removeEventListener = function(id, callback) { return nodeAsyncCaller(13, id, 0, "", callback); };
-	exports.getErrorString = function(id, callback) { return nodeAsyncCaller(14, id, 0, "", callback); };
+	exports.getModel = function(id, callback) { return nodeAsyncCaller(10, id, 0, '', callback); };
+	exports.getDeviceType = function(id, callback) { return nodeAsyncCaller(11, id, 0, '', callback); };
+	exports.removeDevice = function(id, callback) { return nodeAsyncCaller(12, id, 0, '', callback); };
+	exports.removeEventListener = function(id, callback) { return nodeAsyncCaller(13, id, 0, '', callback); };
+	exports.getErrorString = function(id, callback) { return nodeAsyncCaller(14, id, 0, '', callback); };
 	
 	// Sync versions
 	exports.turnOnSync = function(id) { return telldus.turnOn(id); };
@@ -72,6 +73,7 @@ var TELLDUS_SUCCESS=0;
 	 */
 	var nodeAsyncCaller = function (worktype, id, num, str, callback) {
 		return telldus.AsyncCaller(worktype, id, num, str, function(result){
+			var args = [];
 			var rtype = typeof result;
 			if(typeof callback !== 'function'){
 				callback = function(){};
@@ -81,11 +83,10 @@ var TELLDUS_SUCCESS=0;
 				//assume it represents an error code if <>0
 				if(result < TELLDUS_SUCCESS){				
 					//get the description
-					description = exports.getErrorStringSync(result);
+					var description = exports.getErrorStringSync(result);
 					return callback(new errors.TelldusError({code:result, message:description}));
 				}
 				else{
-					var args = [];
 					//no error, first argument to callback should be null,
 					//copy the rest from arguments
 					if(result >0){
@@ -104,7 +105,7 @@ var TELLDUS_SUCCESS=0;
 					return callback(new errors.TelldusError({code:result, message:'Nothing to get!'}));
 				}
 				//all arguments are ok.
-				var args = [null].concat(Array.prototype.slice.call(arguments, 0));
+				args = [null].concat(Array.prototype.slice.call(arguments, 0));
 				return callback.apply(undefined, args);
 			}
 			else if (rtype === 'boolean'){
@@ -116,7 +117,7 @@ var TELLDUS_SUCCESS=0;
 				return callback.apply(undefined, Array.prototype.slice.call(arguments));
 			}
 		});
-	}
+	};
 
 
 
