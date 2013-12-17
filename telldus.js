@@ -81,7 +81,7 @@ var TELLDUS_SUCCESS=0;
 			//did we get a number as first value?
 			if(rtype === 'number'){
 				//assume it represents an error code if <>0
-				if(result < TELLDUS_SUCCESS){				
+				if(result < TELLDUS_SUCCESS){
 					//get the description
 					var description = exports.getErrorStringSync(result);
 					return callback(new errors.TelldusError({code:result, message:description}));

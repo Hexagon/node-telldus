@@ -266,15 +266,15 @@ describe('telldus library should', function () {
   describe('support switches', function(){
 
 
-    it('turnOff', function(done) {    
+    it('turnOff', function(done) {
       var device = this.devices[0];
       telldus.turnOff(device.id, function(err){
         should.not.exist(err);
         //refresh
         device = telldus.getDevicesSync()[0];
-        device.status.should.have.property('status', 'OFF');  
+        device.status.should.have.property('status', 'OFF');
         done();
-      });    
+      });
     });
 
 
@@ -284,7 +284,7 @@ describe('telldus library should', function () {
       returnValue.should.be.equal(0);
       //refresh
       device = telldus.getDevicesSync()[0];
-      device.status.should.have.property('status', 'OFF');  
+      device.status.should.have.property('status', 'OFF');
     });
 
 
@@ -296,7 +296,7 @@ describe('telldus library should', function () {
         device = telldus.getDevicesSync()[0];
         device.status.should.have.property('status', 'ON');
         done();
-      });    
+      });
     });
 
 
@@ -385,7 +385,7 @@ describe('telldus library should', function () {
           console.log('device:%s, event:%j', deviceId, evt);
         }
         deviceId.should.be.above(0);
-        evt.should.have.property('status', 'ON'); 
+        evt.should.have.property('status', 'ON');
         count++;
       });
       
