@@ -215,16 +215,15 @@ describe("telldus library should", function () {
       
 
       it('setName', function(done){
-        this.timeout(6000);
         telldus.setName(deviceId, 'Newly created2', function(err){
           should.not.exist(err);
-          setTimeout(validate, 3000); //delay validation some
+          validate();
         });
 
         function validate() {
           var name = telldus.getNameSync(deviceId);
           name.should.equal('Newly created2', 'setName did not fail but can not get new values');
-          done(err);
+          done();
         }
       });
 
