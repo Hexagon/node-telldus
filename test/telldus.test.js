@@ -264,7 +264,7 @@ describe("telldus library should", function () {
   });//end with a device
 
 
-  describe.skip("support switches", function(){
+  describe("support switches", function(){
 
 
     it('turnOff', function(done) {    
