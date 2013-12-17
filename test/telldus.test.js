@@ -138,105 +138,129 @@ describe("telldus library should", function () {
   });
 
 
-  it('addDeviceSync', function(){
-    var id = telldus.addDeviceSync();
-    id.should.be.above(0);
-  });
+  describe('with config be able to', function(){
+  
+    describe('sync', function(){
+      var deviceId;
 
-
-  describe('with a device be able to', function(){
-    var deviceId;
-
-    
-    before(function(done){
-      deviceId = telldus.addDeviceSync();
-      //delay so that telldus-core can do it's work
-      setTimeout(function(){
-        done();
-      },1500);
-    });
-
-
-    it('getName with proper error', function(done){
-      telldus.getName(deviceId, function(err, name){
-        should.exist(err);
-        err.should.be.an.instanceOf(errors.TelldusError);
-        err.should.have.property('message', 'Nothing to get!');
-        err.should.have.property('code', '');
-        done();
+      before(function(){
+        deviceId = telldus.addDeviceSync();
       });
-    });
 
 
-    it('getNameSync', function(){
-      var name = telldus.getNameSync(deviceId);
-      name.should.equal('');
-    });
+      it('addDeviceSync', function(){
+        var id = telldus.addDeviceSync();
+        id.should.be.above(0);
+      });
 
 
-    it('setNameSync', function(){
-      var setResult = telldus.setNameSync(deviceId, 'Newly created');
-      var name = telldus.getNameSync(deviceId);
-      name.should.equal('Newly created');
-      setResult.should.equal(true, 'set worked but did still return error');
-    });
-
-
-    it('setName', function(done){
-      telldus.setName(deviceId, 'Newly created2', function(err){
-        should.not.exist(err);
+      it('getNameSync', function(){
         var name = telldus.getNameSync(deviceId);
-        name.should.equal('Newly created2', 'setName did not fail but can not get new values');
-        done(err);
+        name.should.equal('');
       });
-    });
+      
 
-
-    it('getName', function(done){
-      telldus.setNameSync(deviceId, 'Newly created3');
-      telldus.getName(deviceId, function(err, name){
-        should.not.exist(err);
-        name.should.equal('Newly created3');
-        done();
+      it('setNameSync', function(){
+        var setResult = telldus.setNameSync(deviceId, 'Newly created');
+        var name = telldus.getNameSync(deviceId);
+        name.should.equal('Newly created');
+        setResult.should.equal(true, 'set worked but did still return error');
       });
-    });
 
 
-    it('getProtocolSync', function(){
-      var p = telldus.getProtocolSync(deviceId);
-      p.should.equal('');
-    });
-
-
-    it('getProtocol', function(done){
-      telldus.getProtocol(deviceId, function(err, p){
-        should.exist(err);
-        err.should.have.property('message', 'Nothing to get!');
-        should.not.exist(p);
-        done();
-      });
-    });
-
-
-    it('setProtocol', function (done) {
-      telldus.setProtocol(deviceId, VALID_PROTOCOL, function(err){
-        should.not.exist(err, "setProtocol failed");
-
+      it('getProtocolSync', function(){
         var p = telldus.getProtocolSync(deviceId);
-        p.should.equal(VALID_PROTOCOL, 'setProtocol did not fail but can not get new values');
-
-        done(err);
+        p.should.equal(''); //newly created device does not have a name.
       });
-    });
 
 
-    it('setProtocolSync', function (done) {
-      var result = telldus.setProtocolSync(deviceId, VALID_PROTOCOL);
-      result.should.be.true;
-      var p = telldus.getProtocolSync(deviceId);
-      p.should.equal(VALID_PROTOCOL);
-    });
+      it('setProtocolSync', function () {
+        var result = telldus.setProtocolSync(deviceId, VALID_PROTOCOL);
+        result.should.be.true;
+        var p = telldus.getProtocolSync(deviceId); //now it should have
+        p.should.equal(VALID_PROTOCOL);
+      });
 
+    }); //sync
+
+
+    describe('async', function(){
+      var deviceId;
+
+
+      before(function(){
+         deviceId = telldus.addDeviceSync();
+      });
+
+
+      it('addDevice', function(done){
+        telldus.addDevice(function(err, id){
+          should.not.exist(err);
+          should.exist(id);
+          id.should.be.above(0);
+          done();
+        });
+      });
+
+
+      it('getName with proper error', function(done){
+        telldus.getName(deviceId, function(err, name){
+          should.exist(err);
+          err.should.be.an.instanceOf(errors.TelldusError);
+          err.should.have.property('message', 'Nothing to get!');
+          err.should.have.property('code', '');
+          done();
+        });
+      });
+      
+
+      it('setName', function(done){
+        telldus.setName(deviceId, 'Newly created2', function(err){
+          should.not.exist(err);
+          validate();
+        });
+
+        function validate() {
+          var name = telldus.getNameSync(deviceId);
+          name.should.equal('Newly created2', 'setName did not fail but can not get new values');
+          done();
+        }
+      });
+
+
+      it('getName', function(done){
+        telldus.setNameSync(deviceId, 'Newly created3');
+        telldus.getName(deviceId, function(err, name){
+          should.not.exist(err);
+          name.should.equal('Newly created3');
+          done();
+        });
+      });
+
+
+      it('getProtocol', function(done){
+        telldus.getProtocol(deviceId, function(err, p){
+          should.exist(err);
+          err.should.have.property('message', 'Nothing to get!');
+          should.not.exist(p);
+          done();
+        });
+      });
+
+
+      it('setProtocol', function (done) {
+        telldus.setProtocol(deviceId, VALID_PROTOCOL, function(err){
+          should.not.exist(err, "setProtocol failed");
+
+          var p = telldus.getProtocolSync(deviceId);
+          p.should.equal(VALID_PROTOCOL, 'setProtocol did not fail but can not get new values');
+
+          done(err);
+        });
+      });
+
+    }); //async
+    
   });//end with a device
 
 

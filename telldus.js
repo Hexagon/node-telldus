@@ -79,21 +79,22 @@ var TELLDUS_SUCCESS=0;
 			//did we get a number as first value?
 			if(rtype === 'number'){
 				//assume it represents an error code if <>0
-				if(result !== TELLDUS_SUCCESS){				
+				if(result < TELLDUS_SUCCESS){				
 					//get the description
-					exports.getErrorString(result, function(err, description){
-						if(err){
-							//could not get description for this. return a generic one.
-							return callback(new errors.TelldusError({code:result, message:'Undefined telldus error:' + result}));
-						}
-						//return error with description
-						return callback(new errors.TelldusError({code:result, message:description}));
-					});
+					description = exports.getErrorStringSync(result);
+					return callback(new errors.TelldusError({code:result, message:description}));
 				}
 				else{
+					var args = [];
 					//no error, first argument to callback should be null,
 					//copy the rest from arguments
-					var args = [null].concat(Array.prototype.slice.call(arguments, 1));
+					if(result >0){
+						//first argument is a value we want to get.
+						args = [null].concat(Array.prototype.slice.call(arguments, 0));
+					}
+					else{
+						args = [null].concat(Array.prototype.slice.call(arguments, 1));
+					}
 					return callback.apply(undefined, args);
 				}
 			}
