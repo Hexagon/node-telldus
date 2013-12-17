@@ -3,6 +3,14 @@ var telldus = require('./build/Release/telldus');
 var errors = require('./lib/errors');
 var TELLSTICK_SUCCESS = 0;
 
+//initialize the telldus library
+telldus.init();
+
+//try to close before garbage collect
+process.on('exit', function () {
+	telldus.close();
+});
+
 (function (exports, global) {
 
 	// Async-only functions

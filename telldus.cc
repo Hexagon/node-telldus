@@ -421,6 +421,20 @@ namespace telldus_v8 {
 
       return scope.Close(str);
    }
+
+   Handle<Value> init( const Arguments& args ) {
+      HandleScope scope;
+      tdInit();
+      Handle<Boolean> result = Boolean::New(1);
+      return scope.Close(result);
+   }
+
+   Handle<Value> close( const Arguments& args ) {
+      HandleScope scope;
+      tdClose();
+      Handle<Boolean> result = Boolean::New(1);
+      return scope.Close(result);
+   }
    
 
     void DeviceEventCallbackWorking(uv_work_t *req) {
@@ -844,6 +858,11 @@ void init(Handle<Object> target) {
      FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
    target->Set(String::NewSymbol("getErrorString"),
      FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
+
+   target->Set(String::NewSymbol("init"),
+     FunctionTemplate::New(telldus_v8::init)->GetFunction());
+   target->Set(String::NewSymbol("close"),
+     FunctionTemplate::New(telldus_v8::close)->GetFunction());
 
  
 }
