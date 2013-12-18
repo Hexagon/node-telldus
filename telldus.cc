@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
+#include <list>
 
 #include <telldus-core.h>
 
@@ -29,6 +30,8 @@ namespace telldus_v8 {
   struct DeviceEventBaton {
     Persistent<Function> callback;
     int deviceId;
+    int lastSentCommand;
+    int levelNum;
   };
 
   struct SensorEventBaton {
@@ -59,31 +62,37 @@ namespace telldus_v8 {
     | TELLSTICK_DOWN
     | TELLSTICK_STOP;
 
-  Local<Object> GetSupportedMethods(int id){
+  struct telldusDeviceInternals {
+    int supportedMethods;
+    int deviceType;
+    int lastSentCommand;
+    int level;
+    int id;
+    char *name;
+    char *model;
+  };
 
-    int methods = tdMethods( id, SUPPORTED_METHODS );
+  Local<Object> GetSupportedMethods(int id, int supportedMethods){
 
     Local<Array> methodsObj = Array::New();
 
     int i = 0;
 
-    if (methods & TELLSTICK_TURNON)  methodsObj->Set(i++, String::New("TURNON"));
-    if (methods & TELLSTICK_TURNOFF) methodsObj->Set(i++, String::New("TURNOFF"));
-    if (methods & TELLSTICK_BELL) methodsObj->Set(i++, String::New("BELL"));
-    if (methods & TELLSTICK_TOGGLE) methodsObj->Set(i++, String::New("TOGGLE"));
-    if (methods & TELLSTICK_DIM)  methodsObj->Set(i++, String::New("DIM"));
-    if (methods & TELLSTICK_UP) methodsObj->Set(i++, String::New("UP"));
-    if (methods & TELLSTICK_DOWN) methodsObj->Set(i++, String::New("DOWN"));
-    if (methods & TELLSTICK_STOP) methodsObj->Set(i++, String::New("STOP"));
-    if (methods & TELLSTICK_LEARN) methodsObj->Set(i++, String::New("LEARN"));
+    if (supportedMethods & TELLSTICK_TURNON)  methodsObj->Set(i++, String::New("TURNON"));
+    if (supportedMethods & TELLSTICK_TURNOFF) methodsObj->Set(i++, String::New("TURNOFF"));
+    if (supportedMethods & TELLSTICK_BELL) methodsObj->Set(i++, String::New("BELL"));
+    if (supportedMethods & TELLSTICK_TOGGLE) methodsObj->Set(i++, String::New("TOGGLE"));
+    if (supportedMethods & TELLSTICK_DIM)  methodsObj->Set(i++, String::New("DIM"));
+    if (supportedMethods & TELLSTICK_UP) methodsObj->Set(i++, String::New("UP"));
+    if (supportedMethods & TELLSTICK_DOWN) methodsObj->Set(i++, String::New("DOWN"));
+    if (supportedMethods & TELLSTICK_STOP) methodsObj->Set(i++, String::New("STOP"));
+    if (supportedMethods & TELLSTICK_LEARN) methodsObj->Set(i++, String::New("LEARN"));
 
     return methodsObj;
 
   }
 
-  Local<String> GetDeviceType(int id){
-
-    int type = tdGetDeviceType(id);
+  Local<String> GetDeviceType(int id, int type){
 
     if(type & TELLSTICK_TYPE_DEVICE) return String::New("DEVICE");
     if(type & TELLSTICK_TYPE_GROUP) return String::New("GROUP");
@@ -93,12 +102,9 @@ namespace telldus_v8 {
 
   }
 
-  Local<Object> GetDeviceStatus(int id){
+  Local<Object> GetDeviceStatus(int id, int lastSentCommand, int level){
 
     Local<Object> status = Object::New();
-    int lastSentCommand = tdLastSentCommand(id, SUPPORTED_METHODS);
-    int level_num = 0;
-    char *level = 0;
 
     switch(lastSentCommand) {
       case TELLSTICK_TURNON:
@@ -109,17 +115,7 @@ namespace telldus_v8 {
         break;
       case TELLSTICK_DIM:
         status->Set(String::NewSymbol("status"), String::New("DIM"));
-
-        // Get level, returned from telldus-core as char
-        level = tdLastSentValue(id);
-
-        // Convert to number and add to object
-        level_num = atoi(level);
-        status->Set(String::NewSymbol("level"), Number::New(level_num));
-
-        // Clean up the mess
-        tdReleaseString(level);
-
+        status->Set(String::NewSymbol("level"), Number::New(level));
         break;
       default:
         status->Set(String::NewSymbol("status"), String::New("UNNKOWN"));
@@ -129,43 +125,105 @@ namespace telldus_v8 {
 
   }
 
-  Local<Object> GetDevice(int index) {
-
-    int id = tdGetDeviceId( index );
-    char *name = tdGetName( id );
-    char *model = tdGetModel(id);
+  Local<Object> GetDevice( telldusDeviceInternals deviceInternals ) {
 
     Local<Object> obj = Object::New();
-    obj->Set(String::NewSymbol("name"), String::New(name, strlen(name)));
-    obj->Set(String::NewSymbol("id"), Number::New(id));
-    obj->Set(String::NewSymbol("methods"), GetSupportedMethods(id));
-    obj->Set(String::NewSymbol("model"), String::New(model, strlen(model)));
-    obj->Set(String::NewSymbol("type"), GetDeviceType(id));
-    obj->Set(String::NewSymbol("status"), GetDeviceStatus(id));
+    obj->Set(String::NewSymbol("name"), String::New(deviceInternals.name, strlen(deviceInternals.name)));
+    obj->Set(String::NewSymbol("id"), Number::New(deviceInternals.id));
+    obj->Set(String::NewSymbol("methods"), GetSupportedMethods(deviceInternals.id,deviceInternals.supportedMethods));
+    obj->Set(String::NewSymbol("model"), String::New(deviceInternals.model, strlen(deviceInternals.model)));
+    obj->Set(String::NewSymbol("type"), GetDeviceType(deviceInternals.id,deviceInternals.deviceType));
+    obj->Set(String::NewSymbol("status"), GetDeviceStatus(deviceInternals.id,deviceInternals.lastSentCommand,deviceInternals.level));
 
-    tdReleaseString(name);
-    tdReleaseString(model);
+    // Cleanup
+    tdReleaseString(deviceInternals.name);
+    tdReleaseString(deviceInternals.model);
 
     return obj;
 
   }
 
-  Handle<Value> getDevices( const Arguments& args ) {
+  Handle<Value> getDevicesFromInternals( list<telldusDeviceInternals> t ) {
 
     HandleScope scope;
 
-    int intNumberOfDevices = tdGetNumberOfDevices();
-    Local<Array> devices = Array::New(intNumberOfDevices);
-
-    for (int i = 0; i < intNumberOfDevices; i++) {
-      devices->Set(i, GetDevice(i));
+    // Destination array
+    Local<Array> devices = Array::New(t.size());
+    int i=0;
+    for (list<telldusDeviceInternals>::const_iterator iterator = t.begin(), end = t.end(); iterator != end; ++iterator) {
+        devices->Set(i, GetDevice(*iterator));
+        i++;
     }
 
     return scope.Close(devices);
 
   }
 
-  void DeviceEventCallbackWorking(uv_work_t *req) { }
+  telldusDeviceInternals getDeviceRaw(int idx) {
+
+    telldusDeviceInternals deviceInternals;
+
+    deviceInternals.id = tdGetDeviceId( idx );
+    deviceInternals.name = tdGetName( deviceInternals.id );
+    deviceInternals.model = tdGetModel( deviceInternals.id );
+
+    deviceInternals.supportedMethods = tdMethods( deviceInternals.id, SUPPORTED_METHODS );
+    deviceInternals.deviceType = tdGetDeviceType( deviceInternals.id );
+    deviceInternals.lastSentCommand = tdLastSentCommand( deviceInternals.id, SUPPORTED_METHODS );
+
+    if( deviceInternals.lastSentCommand == TELLSTICK_DIM ) {
+
+        char * levelStr = tdLastSentValue(deviceInternals.id);
+
+        // Convert to number and add to object
+        deviceInternals.level = atoi(levelStr);
+
+        // Clean up the mess
+        tdReleaseString(levelStr);
+
+    }
+
+    return deviceInternals;
+
+  }
+
+  list<telldusDeviceInternals> getDevicesRaw() {
+    
+    int intNumberOfDevices = tdGetNumberOfDevices();
+    list<telldusDeviceInternals> deviceList;
+
+    for ( int i = 0 ; i < intNumberOfDevices ; i++ ) {
+      deviceList.push_back(getDeviceRaw(i));
+    }
+
+    return deviceList;
+
+  }
+
+  void DeviceEventCallbackWorking(uv_work_t *req) { 
+
+    DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(req->data);
+
+    // Get Status
+    baton->lastSentCommand = tdLastSentCommand(baton->deviceId, SUPPORTED_METHODS);
+    baton->levelNum = 0;
+    char *level = 0;
+
+    if(baton->lastSentCommand == TELLSTICK_DIM) {
+
+      // Get level, returned from telldus-core as char
+      level = tdLastSentValue(baton->deviceId);
+
+      // Convert to number and add to object
+      baton->levelNum = atoi(level);
+
+      // Clean up the mess
+      tdReleaseString(level);
+
+    }
+
+
+  }
 
   void DeviceEventCallbackAfter(uv_work_t *req, int status) {
 
@@ -174,7 +232,7 @@ namespace telldus_v8 {
 
     Local<Value> args[] = {
       Number::New(baton->deviceId),
-      GetDeviceStatus(baton->deviceId),
+      GetDeviceStatus(baton->deviceId,baton->lastSentCommand,baton->levelNum),
     };
 
     baton->callback->Call(baton->callback, 2, args);
@@ -340,6 +398,8 @@ namespace telldus_v8 {
     char* s2; // Arbitrary string value
     bool string_used;
 
+    list<telldusDeviceInternals> l;
+
   };
 
   void RunWork(uv_work_t* req) {
@@ -430,6 +490,8 @@ namespace telldus_v8 {
       case 25: // tdDown
         work->rn = tdDown(work->devID);
         break;
+      case 26: // getDevices
+        work->l = getDevicesRaw();
     }
 
   }
@@ -494,6 +556,15 @@ namespace telldus_v8 {
       case 14:
       case 21:
         argv[0] = String::New(work->rs); // Return string value
+        argv[1] = Integer::New(work->f); // Return callback function
+
+        work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+
+        break;
+
+      // Return list<telldusDeviceInternals>
+      case 26:
+        argv[0] = getDevicesFromInternals(work->l); // Return Object
         argv[1] = Integer::New(work->f); // Return callback function
 
         work->callback->Call(Context::GetCurrent()->Global(), 2, argv);
@@ -672,6 +743,8 @@ namespace telldus_v8 {
         case 25: // tdDown
           work->rn = tdDown(work->devID);
           break;
+        case 26: // getDevices
+          work->l = getDevicesRaw();
     }
 
     // Run callback
@@ -717,6 +790,11 @@ namespace telldus_v8 {
       case 21:
         argv = String::New(work->rs); // Return string value
         break;
+
+      // Return list<telldusDeviceInternals>
+      case 26:
+        argv = getDevicesFromInternals(work->l); // Return Object
+        break;
     }
 
     // Check if we have an allocated string from telldus
@@ -747,10 +825,6 @@ void init(Handle<Object> target) {
   // Syncronous function wrapper
   target->Set(String::NewSymbol("SyncCaller"),
     FunctionTemplate::New(telldus_v8::SyncCaller)->GetFunction());
-
-  // Convenience function for getting all devices into an nice json-object
-  target->Set(String::NewSymbol("getDevices"),
-    FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
 
   // Functions to add event-listener callbacks 
   target->Set(String::NewSymbol("addDeviceEventListener"),
