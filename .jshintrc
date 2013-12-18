@@ -2,7 +2,6 @@
 
 	"undef": true,
 	"unused": true,
-	"strict": true,
 	"node": true,
 	"eqeqeq": true,
 	"laxcomma": true,
