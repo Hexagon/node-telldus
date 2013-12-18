@@ -204,6 +204,17 @@ namespace telldus_v8 {
       return scope.Close(num);
    }
 
+   Handle<Value> getDeviceTypeRaw( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdGetDeviceType(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
+
    Handle<Value> turnOn( const Arguments& args ) {
       HandleScope scope;
       if (!args[0]->IsNumber()) {
@@ -221,6 +232,36 @@ namespace telldus_v8 {
       }
 
       Local<Number> num = Number::New(tdBell(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
+   Handle<Value> execute( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdExecute(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
+   Handle<Value> up( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdUp(args[0]->NumberValue()));
+      return scope.Close(num);
+   }
+
+   Handle<Value> down( const Arguments& args ) {
+      HandleScope scope;
+      if (!args[0]->IsNumber()) {
+         return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+      }
+
+      Local<Number> num = Number::New(tdDown(args[0]->NumberValue()));
       return scope.Close(num);
    }
 
@@ -393,7 +434,7 @@ namespace telldus_v8 {
       v8::String::Utf8Value str2(args[2]);
       const char* cstr2 = ToCString(str2);
       
-      Local<Number> num = Number::New(tdSetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
+      Handle<Boolean> num = Boolean::New(tdSetDeviceParameter(args[0]->NumberValue(), cstr1, cstr2 ));
       return scope.Close(num);
    }
    
@@ -402,7 +443,7 @@ namespace telldus_v8 {
       if (!args[0]->IsNumber()) {
          return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
       }
-      Local<Number> num = Number::New(tdRemoveDevice(args[0]->NumberValue()));
+      Handle<Boolean> num = Boolean::New(tdRemoveDevice(args[0]->NumberValue()));
       return scope.Close(num);
    }
    
@@ -600,6 +641,7 @@ namespace telldus_v8 {
       int devID; // Device ID
       int v; // Arbitrary number value
       char* s; // Arbitrary string value
+      char* s2; // Arbitrary string value
       bool string_used;
 
    };
@@ -647,7 +689,7 @@ namespace telldus_v8 {
             work->rn = tdGetDeviceType(work->devID);
             break;
          case 12:
-            work->rn = tdRemoveDevice(work->devID);
+            work->rb = tdRemoveDevice(work->devID);
             break;
          case 13:
             work->rn = tdUnregisterCallback(work->devID);
@@ -675,7 +717,23 @@ namespace telldus_v8 {
             break;     
           case 20: // tdGetDeviceId(deviceIndex)
             work->rn = tdGetDeviceId(work->devID);
-            break;    
+            break;
+          case 21: // tdGetDeviceParameter(deviceId, name, val)
+            work->rs = tdGetDeviceParameter(work->devID, work->s, work->s2);
+            work->string_used = true;
+            break;
+          case 22: // tdSetDeviceParameter(deviceId, name, val)
+            work->rb = tdSetDeviceParameter(work->devID, work->s, work->s2);
+            break;
+          case 23: // tdExecute
+            work->rn = tdExecute(work->devID);
+            break;
+          case 24: // tdUp
+            work->rn = tdUp(work->devID);
+            break;
+          case 25: // tdDown
+            work->rn = tdDown(work->devID);
+            break;
       }
 
 
@@ -704,12 +762,14 @@ namespace telldus_v8 {
          case 3:
          case 4:
          case 11:
-         case 12:
          case 13:
          case 17:
          case 18:
          case 19:
          case 20:
+         case 23:
+         case 24:
+         case 25:
             argv[0] = Integer::New(work->rn); // Return number value
             argv[1] = Integer::New(work->f); // Return worktype
 
@@ -721,8 +781,10 @@ namespace telldus_v8 {
          case 5:
          case 7:
          case 9:
+         case 12:
          case 15:
          case 16:
+         case 22:
             argv[0] = Boolean::New(work->rb); // Return number value
             argv[1] = Integer::New(work->f); // Return worktype
 
@@ -735,6 +797,7 @@ namespace telldus_v8 {
          case 8:
          case 10:
          case 14:
+         case 21:
             argv[0] = String::New(work->rs); // Return string value
             argv[1] = Integer::New(work->f); // Return callback function
 
@@ -758,6 +821,8 @@ namespace telldus_v8 {
       work->callback.Clear();
 
       free(work->s); // char* Created in AsyncCaller
+      free(work->s2); // char* Created in AsyncCaller
+
       delete work;
 
    }
@@ -768,7 +833,7 @@ namespace telldus_v8 {
       HandleScope scope;
 
       // Make sure we don't get any funky data
-      if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString()) {
+      if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString() || !args[4]->IsString()) {
          return ThrowException(Exception::TypeError(String::New("Wrong arguments")));
       }
 
@@ -777,14 +842,18 @@ namespace telldus_v8 {
       String::Utf8Value str(args[3]);
       char * str_copy = strdup(*str); // Deleted at end of RunCallback
 
+      String::Utf8Value str2(args[4]);
+      char * str_copy2 = strdup(*str2); // Deleted at end of RunCallback
+
       js_work* work = new js_work;
       work->f = args[0]->NumberValue(); // Worktype
       work->devID = args[1]->NumberValue(); // Device ID
       work->v = args[2]->NumberValue(); // Arbitrary number value
       work->s = str_copy; // Arbitrary string value
+      work->s2 = str_copy2; // Arbitrary string value
 
       work->req.data = work;
-      work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[4]));
+      work->callback = Persistent<Function>::New(Handle<Function>::Cast(args[5]));
 
       uv_queue_work(uv_default_loop(), &work->req, RunWork, (uv_after_work_cb)RunCallback);
 
@@ -798,71 +867,80 @@ namespace telldus_v8 {
 extern "C"
 void init(Handle<Object> target) {
 
-   HandleScope scope;
+  HandleScope scope;
 
-   target->Set(String::NewSymbol("AsyncCaller"),
-     FunctionTemplate::New(telldus_v8::AsyncCaller)->GetFunction());
-   target->Set(String::NewSymbol("getNumberOfDevices"),
-     FunctionTemplate::New(telldus_v8::getNumberOfDevices)->GetFunction());
-   target->Set(String::NewSymbol("getDevices"),
-     FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
-   target->Set(String::NewSymbol("turnOn"),
-     FunctionTemplate::New(telldus_v8::turnOn)->GetFunction());
-   target->Set(String::NewSymbol("stop"),
-     FunctionTemplate::New(telldus_v8::stop)->GetFunction());
-   target->Set(String::NewSymbol("bell"),
-     FunctionTemplate::New(telldus_v8::bell)->GetFunction());
-   target->Set(String::NewSymbol("turnOff"),
-     FunctionTemplate::New(telldus_v8::turnOff)->GetFunction());
-   target->Set(String::NewSymbol("dim"),
-     FunctionTemplate::New(telldus_v8::dim)->GetFunction());
-   target->Set(String::NewSymbol("learn"),
-     FunctionTemplate::New(telldus_v8::learn)->GetFunction());
-   target->Set(String::NewSymbol("addDeviceEventListener"),
-     FunctionTemplate::New(telldus_v8::addDeviceEventListener)->GetFunction());
-   target->Set(String::NewSymbol("addSensorEventListener"),
-     FunctionTemplate::New(telldus_v8::addSensorEventListener)->GetFunction());
-   target->Set(String::NewSymbol("addRawDeviceEventListener"),
-     FunctionTemplate::New(telldus_v8::addRawDeviceEventListener)->GetFunction());
-   target->Set(String::NewSymbol("removeEventListener"),
-     FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
-   target->Set(String::NewSymbol("addDevice"),
-     FunctionTemplate::New(telldus_v8::addDevice)->GetFunction());
+  target->Set(String::NewSymbol("AsyncCaller"),
+    FunctionTemplate::New(telldus_v8::AsyncCaller)->GetFunction());
 
-   target->Set(String::NewSymbol("getName"),
-     FunctionTemplate::New(telldus_v8::getName)->GetFunction());
-   target->Set(String::NewSymbol("setName"),
-     FunctionTemplate::New(telldus_v8::setName)->GetFunction());
 
-   target->Set(String::NewSymbol("getProtocol"),
-     FunctionTemplate::New(telldus_v8::getProtocol)->GetFunction());
-   target->Set(String::NewSymbol("setProtocol"),
-     FunctionTemplate::New(telldus_v8::setProtocol)->GetFunction());
+  target->Set(String::NewSymbol("getNumberOfDevices"),
+    FunctionTemplate::New(telldus_v8::getNumberOfDevices)->GetFunction());
+  target->Set(String::NewSymbol("getDevices"),
+    FunctionTemplate::New(telldus_v8::getDevices)->GetFunction());
 
-   target->Set(String::NewSymbol("getModel"),
-     FunctionTemplate::New(telldus_v8::getModel)->GetFunction());
-   target->Set(String::NewSymbol("setModel"),
-     FunctionTemplate::New(telldus_v8::setModel)->GetFunction());
 
-/* target->Set(String::NewSymbol("myGetDeviceType"),
-     FunctionTemplate::New(telldus_v8::myGetDeviceType)->GetFunction());
-   target->Set(String::NewSymbol("setType"),
-     FunctionTemplate::New(telldus_v8::setType)->GetFunction());*/
+  target->Set(String::NewSymbol("turnOn"),
+    FunctionTemplate::New(telldus_v8::turnOn)->GetFunction());
+  target->Set(String::NewSymbol("stop"),
+    FunctionTemplate::New(telldus_v8::stop)->GetFunction());
+  target->Set(String::NewSymbol("execute"),
+    FunctionTemplate::New(telldus_v8::execute)->GetFunction());
+  target->Set(String::NewSymbol("up"),
+    FunctionTemplate::New(telldus_v8::up)->GetFunction());
+  target->Set(String::NewSymbol("down"),
+    FunctionTemplate::New(telldus_v8::down)->GetFunction()); 
+  target->Set(String::NewSymbol("bell"),
+    FunctionTemplate::New(telldus_v8::bell)->GetFunction());
+  target->Set(String::NewSymbol("turnOff"),
+    FunctionTemplate::New(telldus_v8::turnOff)->GetFunction());
+  target->Set(String::NewSymbol("dim"),
+    FunctionTemplate::New(telldus_v8::dim)->GetFunction());
 
-/* target->Set(String::NewSymbol("getDeviceParameter"),
-     FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
-   target->Set(String::NewSymbol("setDeviceParameter"),
-     FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());*/
+  target->Set(String::NewSymbol("learn"),
+    FunctionTemplate::New(telldus_v8::learn)->GetFunction());
+  target->Set(String::NewSymbol("addDeviceEventListener"),
+    FunctionTemplate::New(telldus_v8::addDeviceEventListener)->GetFunction());
+  target->Set(String::NewSymbol("addSensorEventListener"),
+    FunctionTemplate::New(telldus_v8::addSensorEventListener)->GetFunction());
+  target->Set(String::NewSymbol("addRawDeviceEventListener"),
+    FunctionTemplate::New(telldus_v8::addRawDeviceEventListener)->GetFunction());
+  target->Set(String::NewSymbol("removeEventListener"),
+    FunctionTemplate::New(telldus_v8::removeEventListener)->GetFunction());
+  target->Set(String::NewSymbol("addDevice"),
+    FunctionTemplate::New(telldus_v8::addDevice)->GetFunction());
 
-   target->Set(String::NewSymbol("removeDevice"),
-     FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
-   target->Set(String::NewSymbol("getErrorString"),
-     FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
+  target->Set(String::NewSymbol("getName"),
+    FunctionTemplate::New(telldus_v8::getName)->GetFunction());
+  target->Set(String::NewSymbol("setName"),
+    FunctionTemplate::New(telldus_v8::setName)->GetFunction());
 
-   target->Set(String::NewSymbol("init"),
-     FunctionTemplate::New(telldus_v8::init)->GetFunction());
-   target->Set(String::NewSymbol("close"),
-     FunctionTemplate::New(telldus_v8::close)->GetFunction());
+  target->Set(String::NewSymbol("getProtocol"),
+    FunctionTemplate::New(telldus_v8::getProtocol)->GetFunction());
+  target->Set(String::NewSymbol("setProtocol"),
+    FunctionTemplate::New(telldus_v8::setProtocol)->GetFunction());
+
+  target->Set(String::NewSymbol("getModel"),
+    FunctionTemplate::New(telldus_v8::getModel)->GetFunction());
+  target->Set(String::NewSymbol("setModel"),
+    FunctionTemplate::New(telldus_v8::setModel)->GetFunction());
+
+  target->Set(String::NewSymbol("getDeviceTypeRaw"),
+    FunctionTemplate::New(telldus_v8::getDeviceTypeRaw)->GetFunction());
+
+  target->Set(String::NewSymbol("getDeviceParameter"),
+    FunctionTemplate::New(telldus_v8::getDeviceParameter)->GetFunction());
+  target->Set(String::NewSymbol("setDeviceParameter"),
+    FunctionTemplate::New(telldus_v8::setDeviceParameter)->GetFunction());
+
+  target->Set(String::NewSymbol("removeDevice"),
+    FunctionTemplate::New(telldus_v8::removeDevice)->GetFunction());
+  target->Set(String::NewSymbol("getErrorString"),
+    FunctionTemplate::New(telldus_v8::getErrorString)->GetFunction());
+
+  target->Set(String::NewSymbol("init"),
+    FunctionTemplate::New(telldus_v8::init)->GetFunction());
+  target->Set(String::NewSymbol("close"),
+    FunctionTemplate::New(telldus_v8::close)->GetFunction());
 
  
 }
