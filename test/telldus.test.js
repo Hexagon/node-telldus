@@ -238,7 +238,7 @@ describe('telldus library should', function () {
       });
 
 
-      it('setModelSync', function(){
+      it('setModelSync', function () {
         var r = telldus.setModelSync(deviceId, VALID_MODELS[0]);
         r.should.equal(true);
         r = telldus.getModelSync(deviceId);
@@ -246,16 +246,16 @@ describe('telldus library should', function () {
       });
 
 
-      it('getDeviceTypeSync', function(){
+      it('getDeviceTypeSync', function () {
         var r = telldus.getDeviceTypeSync(1);
-        r.should.be.within(1,3);
+        r.should.be.within(1, 3);
       });
 
 
-      it('removeDeviceSync', function(){
+      it('removeDeviceSync', function () {
         var r = telldus.removeDeviceSync(deviceId);
         r.should.be.equal(true);
-      })
+      });
 
     }); //sync
 
@@ -423,7 +423,7 @@ describe('telldus library should', function () {
 
         //do some tests
         data.should.be.type('string');
-        if ((data.indexOf(';')<0 || data.indexOf(':')<0)) {
+        if ((data.indexOf(';') < 0 || data.indexOf(':') < 0)) {
           //need to filter some junk
           return;
         }
