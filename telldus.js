@@ -4,11 +4,11 @@ var errors = require('./lib/errors');
 var TELLSTICK_SUCCESS = 0;
 
 //initialize the telldus library
-telldus.init();
+telldus.SyncCaller(15, 0, 0, '', '');
 
 //try to close before garbage collect
 process.on('exit', function () {
-	telldus.close();
+	telldus.SyncCaller(16, 0, 0, '', '');
 });
 
 (function (exports, global) {
@@ -48,30 +48,30 @@ process.on('exit', function () {
 	exports.down = function (id, callback) { return nodeAsyncCaller(25, id, 0, '', '', callback); };
 
 	// Sync versions
-	exports.turnOnSync = function (id) { return telldus.turnOn(id); };
-	exports.turnOffSync = function (id) { return telldus.turnOff(id); };
-	exports.dimSync = function (id, levl) { return telldus.dim(id, levl); };
-	exports.learnSync = function (id) { return telldus.learn(id); };
-	exports.addDeviceSync = function () { return telldus.addDevice(); };
-	exports.getNameSync = function (id) { return telldus.getName(id); };
-	exports.setNameSync = function (id, name) { return telldus.setName(id, name); };
-	exports.getProtocolSync = function (id) { return telldus.getProtocol(id); };
-	exports.setProtocolSync = function (id, protocol) { return telldus.setProtocol(id, protocol); };
-	exports.getModelSync = function (id) { return telldus.getModel(id); };
-	exports.setModelSync = function (id, model) { return telldus.setModel(id, model); };
-	exports.getDeviceTypeSync = function (id) { return telldus.getDeviceTypeRaw(id); };
-	exports.removeDeviceSync = function (id) { return telldus.removeDevice(id); };
-	exports.removeEventListenerSync = function (id) { return telldus.removeEventListener(id); };
-	exports.getErrorStringSync = function (id) { return telldus.getErrorString(id); };
-	exports.getNumberOfDevicesSync = function () { return telldus.getNumberOfDevices(); };
-	exports.stopSync = function (id) { return telldus.stop(id); };
-	exports.bellSync = function (id) { return telldus.bell(id); };
-	exports.getDeviceIdSync = function (id) { return telldus.getDeviceId(id); };
-	exports.getDeviceParameterSync = function (id, name, val) { return telldus.getDeviceParameter(id, name, val); };
-	exports.setDeviceParameterSync = function (id, name, val) { return telldus.setDeviceParameter(id, name, val); };
-	exports.executeSync = function (id) { return telldus.execute(id); };
-	exports.upSync = function (id) { return telldus.up(id); };
-	exports.downSync = function (id) { return telldus.down(id); };
+	exports.turnOnSync = function (id, callback) { return telldus.SyncCaller(0, id, 0, '', ''); };
+	exports.turnOffSync = function (id, callback) { return telldus.SyncCaller(1, id, 0, '', ''); };
+	exports.dimSync = function (id, levl, callback) { return telldus.SyncCaller(2, id, levl, '', ''); };
+	exports.learnSync = function (id, callback) { return telldus.SyncCaller(3, id, 0, '', ''); };
+	exports.addDeviceSync = function (callback) { return telldus.SyncCaller(4, 0, 0, '', ''); };
+	exports.setNameSync = function (id, name, callback) { return telldus.SyncCaller(5, id, 0, name, ''); };
+	exports.getNameSync = function (id, callback) { return telldus.SyncCaller(6, id, 0, '', ''); };
+	exports.setProtocolSync = function (id, name, callback) { return telldus.SyncCaller(7, id, 0, name, ''); };
+	exports.getProtocolSync = function (id, callback) { return telldus.SyncCaller(8, id, 0, '', ''); };
+	exports.setModelSync = function (id, name, callback) { return telldus.SyncCaller(9, id, 0, name, ''); };
+	exports.getModelSync = function (id, callback) { return telldus.SyncCaller(10, id, 0, '', ''); };
+	exports.getDeviceTypeSync = function (id, callback) { return telldus.SyncCaller(11, id, 0, '', ''); };
+	exports.removeDeviceSync = function (id, callback) { return telldus.SyncCaller(12, id, 0, '', ''); };
+	exports.removeEventListenerSync = function (id, callback) { return telldus.SyncCaller(13, id, 0, '', ''); };
+	exports.getErrorStringSync = function (id, callback) { return telldus.SyncCaller(14, id, 0, '', ''); };
+	exports.getNumberOfDevicesSync = function (callback) { return telldus.SyncCaller(17, 0, 0, '', ''); };
+	exports.stopSync = function (id, callback) { return telldus.SyncCaller(18, id, 0, '', ''); };
+	exports.bellSync = function (id, callback) { return telldus.SyncCaller(19, id, 0, '', ''); };
+	exports.getDeviceIdSync = function (id, callback) { return telldus.SyncCaller(20, id, 0, '', ''); };
+	exports.getDeviceParameterSync = function (id, name, val, callback) { return telldus.SyncCaller(21, id, 0, name, val); };
+	exports.setDeviceParameterSync = function (id, name, val, callback) { return telldus.SyncCaller(22, id, 0, name, val); };
+	exports.executeSync = function (id, callback) { return telldus.SyncCaller(23, id, 0, '', ''); };
+	exports.upSync = function (id, callback) { return telldus.SyncCaller(24, id, 0, '', ''); };
+	exports.downSync = function (id, callback) { return telldus.SyncCaller(25, id, 0, '', ''); };
 
 
 	/**
