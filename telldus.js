@@ -1,7 +1,13 @@
 'use strict';
 var telldus = require('./build/Release/telldus');
 var errors = require('./lib/errors');
-var TELLSTICK_SUCCESS = 0;
+
+var statusEnum = {
+  TELLSTICK_SUCCESS: 0,
+  TELLSTICK_ERROR_DEVICE_NOT_FOUND: 3,
+  TELLSTICK_ERROR_UNKNOWN: -99
+};
+
 
 //initialize the telldus library
 telldus.init();
@@ -12,6 +18,9 @@ process.on('exit', function () {
 });
 
 (function (exports, global) {
+
+  exports.errors = errors;
+  exports.enums = {status:statusEnum};
 
 	// Async-only functions
 	exports.addDeviceEventListener = function (callback) { return telldus.addDeviceEventListener(callback); };
@@ -96,7 +105,7 @@ process.on('exit', function () {
 			//did we get a number as first value?
 			if (rtype === 'number') {
 				//assume it represents an error code if <>0
-				if (result < TELLSTICK_SUCCESS) {
+				if (result < statusEnum.TELLSTICK_SUCCESS) {
 					//get the description
 					var description = exports.getErrorStringSync(result);
 					return callback(new errors.TelldusError({code: result, message: description}));
@@ -116,15 +125,23 @@ process.on('exit', function () {
 			}
 			//was the first one a string..
 			else if (rtype === 'string') {
-				if (result === '') {
-					return callback(new errors.TelldusError({code: result, message: 'Nothing to get!'}));
+				if (result === 'UNKNOWN') {
+					return callback(new errors.TelldusError({
+            code: statusEnum.TELLSTICK_ERROR_DEVICE_NOT_FOUND,
+            message: exports.getErrorStringSync(
+              statusEnum.TELLSTICK_ERROR_DEVICE_NOT_FOUND)
+          }));
 				}
 				//all arguments are ok.
 				args = [null].concat(Array.prototype.slice.call(arguments, 0));
 				return callback.apply(undefined, args);
 			}
 			else if (rtype === 'boolean') {
-				var e = result ? null : new errors.TelldusError({code: result, message: 'Operation failed!'});
+				var e = result ? null : new errors.TelldusError({
+          code: statusEnum.TELLSTICK_ERROR_UNKNOWN,
+          message: exports.getErrorStringSync(
+              statusEnum.TELLSTICK_ERROR_UNKNOWN)
+        });
 				return callback(e);
 			}
 			else {
