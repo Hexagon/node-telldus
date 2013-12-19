@@ -1,29 +1,19 @@
 #ifndef BUILDING_NODE_EXTENSION
-   #define BUILDING_NODE_EXTENSION
+  #define BUILDING_NODE_EXTENSION
 #endif // BUILDING_NODE_EXTENSION
+
+#include <cstdlib>
+#include <string.h>
+#include <list>
 
 #include <node.h>
 #include <v8.h>
-#include <node_buffer.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <iostream>
-#include <list>
 
 #include <telldus-core.h>
 
 using namespace v8;
 using namespace node;
 using namespace std;
-
-#define SIZE 8
-
-// Extracts a C string from a V8 Utf8Value.
-const char* ToCString(const v8::String::Utf8Value& value) {
-  return *value ? *value : "<string conversion failed>";
-}
 
 namespace telldus_v8 {
 
