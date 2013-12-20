@@ -19,7 +19,4 @@
         "mocha": "*"
       , "should": "*"
     }
-, "dependencies": {
-       	"node-gyp": "*"
-    }
 }
