@@ -162,7 +162,7 @@ describe('async methods', function () {
         should.not.exist(err);
         //refresh
         device = telldus.getDevicesSync()[0];
-        device.status.should.have.property('status', 'OFF');
+        device.status.should.have.property('name', 'OFF');
         done();
       });
     });
@@ -174,7 +174,7 @@ describe('async methods', function () {
         should.not.exist(err);
         //refresh
         device = telldus.getDevicesSync()[0];
-        device.status.should.have.property('status', 'ON');
+        device.status.should.have.property('name', 'ON');
         done();
       });
     });

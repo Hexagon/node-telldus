@@ -44,7 +44,7 @@ describe('sync methods', function(){
       dev1.should.have.property('type');
       dev1.should.have.property('status');
       //test status
-      dev1.status.should.have.property('status');
+      dev1.status.should.have.property('name');
 
       //test methods
       var methods = dev1.methods;
@@ -172,7 +172,7 @@ describe('sync methods', function(){
       returnValue.should.be.equal(0);
       //refresh
       device = telldus.getDevicesSync()[0];
-      device.status.should.have.property('status', 'OFF');
+      device.status.should.have.property('name', 'OFF');
     });
 
 
@@ -182,7 +182,7 @@ describe('sync methods', function(){
       returnValue.should.be.equal(0);
       //refresh
       device = telldus.getDevicesSync()[0];
-      device.status.should.have.property('status', 'ON');
+      device.status.should.have.property('name', 'ON');
     });
 
   });
@@ -190,7 +190,7 @@ describe('sync methods', function(){
   describe('support events', function () {
     
     it('deviceEventListener', function (done) {
-      var seconds = 2; // for how many seconds should we wait for an aevent
+      var seconds = 5; // for how many seconds should we wait for an aevent
       this.timeout(seconds * 1000 + 1000);
       var count = 0;
       
@@ -200,7 +200,7 @@ describe('sync methods', function(){
           console.log('device:%s, event:%j', deviceId, evt);
         }
         deviceId.should.be.above(0);
-        evt.should.have.property('status', 'ON');
+        evt.should.have.property('name', 'ON');
         count++;
       });
       

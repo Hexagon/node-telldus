@@ -1,7 +1,7 @@
 telldus - Node bindings for telldus-core
 ===
 
-Latest release is 0.0.5, available at npm using ```npm install telldus```
+Latest release is 0.0.6, available at npm using ```npm install telldus```
 
 ---
 

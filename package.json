@@ -1,5 +1,5 @@
 { "name" : "telldus"
-, "version" : "0.0.5"
+, "version" : "0.0.6"
 , "description" : "node wrapper for telldus-core, based on telldus-core-js"
 , "keywords": ["telldus", "telldus-core", "TellStick", "home automation"]
 , "author": "Robin Nilsson <robinnilsson@gmail.com>"
@@ -7,7 +7,7 @@
         "type": "git"
       , "url": "git://github.com/Hexagon/node-telldus.git"
     }
-, "engines": { "node": ">= 0.10.0" }
+, "engines": { "node": ">= 0.6.19" }
 , "license": "MIT"
 , "main": "./telldus.js"
 , "scripts": { 
@@ -18,5 +18,8 @@
 , "devDependencies": { 
         "mocha": "*"
       , "should": "*"
+    }
+, "dependencies": {
+       	"node-gyp": "*"
     }
 }

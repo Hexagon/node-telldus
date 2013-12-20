@@ -98,17 +98,17 @@ namespace telldus_v8 {
 
     switch(lastSentCommand) {
       case TELLSTICK_TURNON:
-        status->Set(String::NewSymbol("status"), String::New("ON"));
+        status->Set(String::NewSymbol("name"), String::New("ON"));
         break;
       case TELLSTICK_TURNOFF:
-        status->Set(String::NewSymbol("status"), String::New("OFF"));
+        status->Set(String::NewSymbol("name"), String::New("OFF"));
         break;
       case TELLSTICK_DIM:
-        status->Set(String::NewSymbol("status"), String::New("DIM"));
+        status->Set(String::NewSymbol("name"), String::New("DIM"));
         status->Set(String::NewSymbol("level"), Number::New(level));
         break;
       default:
-        status->Set(String::NewSymbol("status"), String::New("UNNKOWN"));
+        status->Set(String::NewSymbol("name"), String::New("UNNKOWN"));
     }
 
     return status;

@@ -3,7 +3,7 @@ var telldus = require('..');
 
 var utils = module.exports = {
   VALID_PROTOCOLS: ['arctech'],
-  VALID_MODELS: ['codeswitch'],
+  VALID_MODELS: ['codeswitch','selflearning-switch'],
   SOME_REALLY_BIG_NUMBER: 1000,
   NON_EXISTING_DEVICE: 999
 };
