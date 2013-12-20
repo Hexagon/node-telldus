@@ -14,8 +14,9 @@ _Note that the master branch isn't always top notch. If it doesn't compile, try 
 	* Linux Ubuntu/Debian: http://developer.telldus.com/wiki/TellStickInstallationUbuntu
 	* Linux source install: http://developer.telldus.com/wiki/TellStickInstallationSource
 2. Clone this project and enter the node-telldus directory ```cd node-telldus```
-2. Compile this module ```npm install -g```
-3. Link the module to your project ```cd yourprojectdirectory``` ```npm link telldus```
+3. Install node-gyp ```npm install node-gyp``` 
+4. Compile this module ```npm install -g```
+5. Link the module to your project ```cd yourprojectdirectory``` ```npm link telldus```
 
 ---
 
@@ -25,7 +26,8 @@ Installation (From npm):
 	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install
 	* Linux Ubuntu/Debian: http://developer.telldus.com/wiki/TellStickInstallationUbuntu
 	* Linux source install: http://developer.telldus.com/wiki/TellStickInstallationSource
-2. Install this module using npm ```cd yourprojectdirectory``` ```npm install telldus```
+2. Install node-gyp ```npm install node-gyp``` 
+3. Install this module using npm ```cd yourprojectdirectory``` ```npm install telldus```
 
 ---
 
