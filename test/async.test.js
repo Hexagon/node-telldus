@@ -264,6 +264,24 @@ describe('async methods', function () {
       
     });
 
+    it('getDeviceId', function (done) {
+      var result = telldus.getDeviceId(0, function(err, result){
+        should.not.exist(err);
+        result.should.equal(1);
+        next();
+      });
+      
+      function next(){
+        result = telldus.getDeviceId(9999, function(err, result){
+          should.not.exist(result);
+          err.should.be.an.instanceOf(telldus.errors.TelldusError);
+          err.should.have.property('message', 'Device not found');
+          err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_DEVICE_NOT_FOUND);
+          done();
+        });
+      }
+    });
+
 
     it('removeDevice', function (done) {
       telldus.removeDevice(deviceId, function (err) {
