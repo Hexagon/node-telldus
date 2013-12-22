@@ -45,7 +45,7 @@ process.on('exit', function () {
 	exports.getNumberOfDevices = function (callback) { return nodeAsyncCaller(17, 0, 0, '', '', callback); };
 	exports.stop = function (id, callback) { return nodeAsyncCaller(18, id, 0, '', '', callback); };
 	exports.bell = function (id, callback) { return nodeAsyncCaller(19, id, 0, '', '', callback); };
-	exports.getDeviceId = function (id, callback) { return nodeAsyncCaller(20, id, 0, '', '', callback); };
+	exports.getDeviceId = function (id, callback) { return nodeDeviceCountCaller(20, id, 0, '', '', callback); };
 	exports.getDeviceParameter = function (id, name, val, callback) { return nodeAsyncCaller(21, id, 0, name, val, callback); };
 	exports.setDeviceParameter = function (id, name, val, callback) { return nodeAsyncCaller(22, id, 0, name, val, callback); };
 	exports.execute = function (id, callback) { return nodeAsyncCaller(23, id, 0, '', '', callback); };
@@ -80,13 +80,41 @@ process.on('exit', function () {
 	exports.downSync = function (id) { return telldus.SyncCaller(25, id, 0, '', ''); };
 	exports.getDevicesSync = function () { return telldus.SyncCaller(26, 0, 0, '', ''); };
 
-	/**
-	 * Callback signature
-	 *
-	 * @callback requestCallback
-	 * @param {Objecj|null} err - TelldusError object or null
-	 * @param {...*} [args] - Different optional arguments depending on method.
-	 */
+
+
+    /**
+     * Callback signature
+     *
+     * @callback requestCallback
+     * @param {Objecj|null} err - TelldusError object or null
+     * @param {...*} [args] - Different optional arguments depending on method.
+     */
+
+    /***
+     * Special callback wrapper for getDeviceCount or anything that returns -1 on fail
+     * @param {number} worktype - the number of the method to execute
+     * @param {number} id - device id
+     * @param {number} num - ?
+     * @param {string} str - ?
+     * @param {requestCallback} callback - Node formated callback.
+     */
+    var nodeDeviceCountCaller = function (worktype, id, num, str, str2, callback) {
+      return telldus.AsyncCaller(worktype, id, num, str, str2, function (result) {
+        if (typeof callback !== 'function') {
+            callback = function () {};
+        }
+        if(result === -1) {
+            return callback(new errors.TelldusError({
+                code: statusEnum.TELLSTICK_ERROR_DEVICE_NOT_FOUND,
+                message: exports.getErrorStringSync(
+                  statusEnum.TELLSTICK_ERROR_DEVICE_NOT_FOUND)})
+            );
+        }
+        else{
+            return callback.apply(undefined, [null].concat(Array.prototype.slice.call(arguments, 0)));
+        }
+      });
+    };
 
 
 	/***
