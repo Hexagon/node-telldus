@@ -4,7 +4,7 @@ var errors = require('./lib/errors');
 
 var statusEnum = {
   TELLSTICK_SUCCESS: 0,
-  TELLSTICK_ERROR_DEVICE_NOT_FOUND: 3,
+  TELLSTICK_ERROR_DEVICE_NOT_FOUND: -3,
   TELLSTICK_ERROR_UNKNOWN: -99
 };
 
