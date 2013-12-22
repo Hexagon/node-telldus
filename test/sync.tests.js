@@ -156,6 +156,12 @@ describe('sync methods', function(){
     });
 
 
+    it('getDeviceParameterSync', function() {
+      var result = telldus.getDeviceParameterSync(deviceId, 'house', 'testdefault');
+      result.should.equal('testdefault');
+    });
+
+
     it('removeDeviceSync', function () {
       var r = telldus.removeDeviceSync(deviceId);
       r.should.be.equal(true);

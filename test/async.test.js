@@ -239,6 +239,14 @@ describe('async methods', function () {
     });
 
 
+    it('getDeviceParameter', function(done) {
+      telldus.getDeviceParameter(deviceId, 'house', 'testdefault', function (err, result){
+        result.should.equal('testdefault');
+        done(err);
+      });
+    });
+
+
     it('removeDevice', function (done) {
       telldus.removeDevice(deviceId, function (err) {
         should.not.exist(err);
