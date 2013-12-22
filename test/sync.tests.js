@@ -137,8 +137,8 @@ describe('sync methods', function(){
 
 
     it('getModelSync with new device and get ""', function () {
-      var result = telldus.getModelSync(utils.NON_EXISTING_DEVICE);
-      result.should.equal('UNKNOWN');
+      var result = telldus.getModelSync(deviceId);
+      result.should.equal('');
     });
 
 
@@ -156,6 +156,18 @@ describe('sync methods', function(){
     });
 
 
+    it('getDeviceParameterSync', function() {
+      var result = telldus.getDeviceParameterSync(deviceId, 'house', 'testdefault');
+      result.should.equal('testdefault');
+    });
+
+
+    it('setDeviceParameterSync', function() {
+      var result = telldus.setDeviceParameterSync(deviceId, 'house', '12345');
+      result.should.equal(true);
+    });
+
+
     it('removeDeviceSync', function () {
       var r = telldus.removeDeviceSync(deviceId);
       r.should.be.equal(true);
@@ -164,8 +176,16 @@ describe('sync methods', function(){
   });//config related
 
 
-  describe('switches', function(){
+  describe('actions', function(){
     
+    var dimmerId;
+
+    before(function (){
+      //create a dimmer device
+      dimmerId = utils.addDimmerSync();
+    });
+
+
     it('turnOffSync', function () {
       var device = this.devices[0];
       var returnValue = telldus.turnOffSync(device.id);
@@ -185,7 +205,30 @@ describe('sync methods', function(){
       device.status.should.have.property('name', 'ON');
     });
 
+
+    it('dimSync should dim', function() {
+      telldus.dimSync(dimmerId, 75);
+      var devices = telldus.getDevicesSync();
+      var found=false;
+      for (var i=0; i<devices.length; i++){
+        if (devices[i].id === dimmerId) {
+          var d = devices[i];
+          d.status.should.have.property('name', 'DIM');
+          d.status.should.have.property('level', 75);
+          found=true;
+        }
+      }
+      found.should.be.equal(true);
+    });
+
+    it('learn should learn...', function(){
+      var result = telldus.learnSync(dimmerId);
+      result.should.equal(telldus.enums.status.TELLSTICK_SUCCESS);
+
+    });
+
   });
+  
 
   describe('support events', function () {
     

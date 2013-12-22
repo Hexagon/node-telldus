@@ -3,7 +3,7 @@ var telldus = require('..');
 
 var utils = module.exports = {
   VALID_PROTOCOLS: ['arctech'],
-  VALID_MODELS: ['codeswitch','selflearning-switch'],
+  VALID_MODELS: ['codeswitch','selflearning-switch', 'selflearning-dimmer'],
   SOME_REALLY_BIG_NUMBER: 1000,
   NON_EXISTING_DEVICE: 999
 };
@@ -56,4 +56,16 @@ utils.cleanUp = function (devices) {
       }
     }
   }
+};
+
+
+utils.addDimmerSync = function (){
+  var deviceId = telldus.addDeviceSync();
+  telldus.setNameSync(deviceId, 'Test Dimmer');
+  telldus.setProtocolSync(deviceId, 'arctech');
+  telldus.setModelSync(deviceId, 'selflearning-dimmer');
+  telldus.setDeviceParameterSync(deviceId, 'house', '12345');
+  telldus.setDeviceParameterSync(deviceId, 'unit', '1');
+
+  return deviceId;
 };

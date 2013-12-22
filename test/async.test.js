@@ -66,6 +66,16 @@ describe('async methods', function () {
     });
 
 
+    it('getDevices', function(done){
+      telldus.getDevices(function (err, devices) {
+        should.not.exist(err);
+        devices.should.be.instanceOf(Array);
+        devices.length.should.be.above(2);
+        done();
+      });
+    });
+
+
     it('addDevice', function (done) {
       telldus.addDevice(function (err, id) {
         should.not.exist(err);
@@ -149,11 +159,123 @@ describe('async methods', function () {
         done(err);
       });
     });
-    
+
+
+    it('getModel', function (done) {
+      telldus.getModel(1, function (err, result) {
+        result.should.not.equal('UNKNOWN');
+        result.should.not.equal('');
+        utils.VALID_MODELS.should.include(result);
+        done(err);
+      });
+    });
+
+
+    it('getModel with bad device and get UNKNOWN', function (done) {
+      telldus.getModel(utils.NON_EXISTING_DEVICE, function (err, result) {
+        should.not.exist(result);
+        err.should.be.an.instanceOf(telldus.errors.TelldusError);
+        err.should.have.property('message', 'Device not found');
+        err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_DEVICE_NOT_FOUND);
+        done();
+      });
+    });
+
+
+    it('getModel with new device and get ""', function (done) {
+      telldus.getModel(deviceId, function (err, result) {
+        result.should.equal('');
+        done(err);
+      });
+    });
+
+
+    it('setModel with bad device and get err', function (done) {
+      telldus.setModel(utils.NON_EXISTING_DEVICE, utils.VALID_MODELS[0], function (err) {
+        err.should.be.an.instanceOf(telldus.errors.TelldusError);
+        err.should.have.property('message', 'Unknown error');
+        err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_UNKNOWN);
+        done();
+      });
+    });
+
+
+    it('setModel with bad model', function (done) {
+      var modelname = 'SHOULD WE ALLOW IT?';
+      telldus.setModel(deviceId, modelname, function (err) {
+        var r = telldus.getModelSync(deviceId);
+        r.should.equal(modelname);
+        done(err);
+      });
+    });
+
+
+    it('setModel', function (done) {
+      telldus.setModel(deviceId, utils.VALID_MODELS[0], function (err) {
+        should.not.exist(err);
+        var r = telldus.getModelSync(deviceId);
+        r.should.equal(utils.VALID_MODELS[0]);
+        done(err);
+      });
+    });
+
+
+    it('getDeviceType with bad device and get err', function (done) {
+      telldus.getDeviceType(utils.NON_EXISTING_DEVICE, function(err, result) {
+        should.not.exist(result);
+        err.should.be.an.instanceOf(telldus.errors.TelldusError);
+        err.should.have.property('message', 'Device not found');
+        err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_DEVICE_NOT_FOUND);
+        done();
+      });
+    });
+
+
+    it('getDeviceType', function (done) {
+      telldus.getDeviceType(1, function(err, result) {
+        result.should.be.within(1, 3);
+        done(err);
+      });
+    });
+
+
+    it('getDeviceParameter', function(done) {
+      telldus.getDeviceParameter(deviceId, 'house', 'testdefault', function (err, result){
+        result.should.equal('testdefault');
+        done(err);
+      });
+    });
+
+
+    it('setDeviceParameter', function(done) {
+      telldus.setDeviceParameter(deviceId, 'house', '12345', callback);
+      function callback(err) {
+        done(err);
+      }
+    });
+
+
+    it('removeDevice', function (done) {
+      telldus.removeDevice(deviceId, function (err) {
+        should.not.exist(err);
+        var devices = telldus.getDevicesSync();
+        for(var i=0; i<devices.length; i++){
+          devices[i].id.should.not.equal(deviceId);
+        }
+        done();
+      });
+    });
   });//config related
 
 
-  describe('switches', function () {
+  describe('actions', function () {
+
+    var dimmerId;
+
+    before(function (){
+      //create a dimmer device
+      dimmerId = utils.addDimmerSync();
+    });
 
 
     it('turnOff', function (done) {
@@ -188,6 +310,38 @@ describe('async methods', function () {
         done();
       });
     });
+
+
+    it('dim should dim', function(done) {
+      telldus.dim(dimmerId, 75, function(err){
+        should.not.exist(err);
+        validate();
+
+      });
+      function validate(){
+        var devices = telldus.getDevicesSync();
+        var found=false;
+        for (var i=0; i<devices.length; i++){
+          if (devices[i].id === dimmerId) {
+            var d = devices[i];
+            d.status.should.have.property('name', 'DIM');
+            d.status.should.have.property('level', 75);
+            found=true;
+          }
+        }
+        found.should.be.equal(true);
+        done();
+      }
+    });
+
+    it('learn should learn...', function(done){
+      telldus.learn(dimmerId, function(err){
+        //TODO:how should this be validated
+        done(err);
+      });
+
+    });
+
   });//switches
 
 
