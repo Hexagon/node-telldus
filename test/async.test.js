@@ -268,7 +268,14 @@ describe('async methods', function () {
   });//config related
 
 
-  describe('switches', function () {
+  describe('actions', function () {
+
+    var dimmerId;
+
+    before(function (){
+      //create a dimmer device
+      dimmerId = utils.addDimmerSync();
+    });
 
 
     it('turnOff', function (done) {
@@ -303,6 +310,38 @@ describe('async methods', function () {
         done();
       });
     });
+
+
+    it('dim should dim', function(done) {
+      telldus.dim(dimmerId, 75, function(err){
+        should.not.exist(err);
+        validate();
+
+      });
+      function validate(){
+        var devices = telldus.getDevicesSync();
+        var found=false;
+        for (var i=0; i<devices.length; i++){
+          if (devices[i].id === dimmerId) {
+            var d = devices[i];
+            d.status.should.have.property('name', 'DIM');
+            d.status.should.have.property('level', 75);
+            found=true;
+          }
+        }
+        found.should.be.equal(true);
+        done();
+      }
+    });
+
+    it('learn should learn...', function(done){
+      telldus.learn(dimmerId, function(err){
+        //TODO:how should this be validated
+        done(err);
+      });
+
+    });
+
   });//switches
 
 

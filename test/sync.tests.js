@@ -176,8 +176,16 @@ describe('sync methods', function(){
   });//config related
 
 
-  describe('switches', function(){
+  describe('actions', function(){
     
+    var dimmerId;
+
+    before(function (){
+      //create a dimmer device
+      dimmerId = utils.addDimmerSync();
+    });
+
+
     it('turnOffSync', function () {
       var device = this.devices[0];
       var returnValue = telldus.turnOffSync(device.id);
@@ -197,7 +205,30 @@ describe('sync methods', function(){
       device.status.should.have.property('name', 'ON');
     });
 
+
+    it('dimSync should dim', function() {
+      telldus.dimSync(dimmerId, 75);
+      var devices = telldus.getDevicesSync();
+      var found=false;
+      for (var i=0; i<devices.length; i++){
+        if (devices[i].id === dimmerId) {
+          var d = devices[i];
+          d.status.should.have.property('name', 'DIM');
+          d.status.should.have.property('level', 75);
+          found=true;
+        }
+      }
+      found.should.be.equal(true);
+    });
+
+    it('learn should learn...', function(){
+      var result = telldus.learnSync(dimmerId);
+      result.should.equal(telldus.enums.status.TELLSTICK_SUCCESS);
+
+    });
+
   });
+  
 
   describe('support events', function () {
     
