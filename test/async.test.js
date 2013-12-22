@@ -66,6 +66,16 @@ describe('async methods', function () {
     });
 
 
+    it('getDevices', function(done){
+      telldus.getDevices(function (err, devices) {
+        should.not.exist(err);
+        devices.should.be.instanceOf(Array);
+        devices.length.should.be.above(2);
+        done();
+      });
+    });
+
+
     it('addDevice', function (done) {
       telldus.addDevice(function (err, id) {
         should.not.exist(err);

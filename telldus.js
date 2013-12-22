@@ -147,6 +147,12 @@ process.on('exit', function () {
         });
 				return callback(e);
 			}
+      else if (rtype === 'object') {
+        if (result instanceof Error) {
+          return callback(result);
+        }
+        return callback(null, result);
+      }
 			else {
 				//can't do much about it. send as is
 				return callback.apply(undefined, Array.prototype.slice.call(arguments));
