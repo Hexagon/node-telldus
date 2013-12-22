@@ -168,10 +168,26 @@ describe('sync methods', function(){
     });
 
 
+    it('getNumberOfDevicesSync', function () {
+      var result = telldus.getNumberOfDevicesSync();
+      result.should.be.within(this.devices.length, this.devices.length + 3);
+    });
+
+
+    it('getDeviceIdSync', function(){
+      var result = telldus.getDeviceIdSync(0);
+      result.should.equal(1);
+
+      result = telldus.getDeviceIdSync(9999);
+      result.should.equal(-1);
+    });
+
+
     it('removeDeviceSync', function () {
       var r = telldus.removeDeviceSync(deviceId);
       r.should.be.equal(true);
     });
+
 
   });//config related
 
