@@ -137,8 +137,8 @@ describe('sync methods', function(){
 
 
     it('getModelSync with new device and get ""', function () {
-      var result = telldus.getModelSync(utils.NON_EXISTING_DEVICE);
-      result.should.equal('UNKNOWN');
+      var result = telldus.getModelSync(deviceId);
+      result.should.equal('');
     });
 
 

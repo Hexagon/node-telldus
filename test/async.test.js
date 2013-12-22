@@ -159,7 +159,96 @@ describe('async methods', function () {
         done(err);
       });
     });
-    
+
+
+    it('getModel', function (done) {
+      telldus.getModel(1, function (err, result) {
+        result.should.not.equal('UNKNOWN');
+        result.should.not.equal('');
+        utils.VALID_MODELS.should.include(result);
+        done(err);
+      });
+    });
+
+
+    it('getModel with bad device and get UNKNOWN', function (done) {
+      telldus.getModel(utils.NON_EXISTING_DEVICE, function (err, result) {
+        should.not.exist(result);
+        err.should.be.an.instanceOf(telldus.errors.TelldusError);
+        err.should.have.property('message', 'Device not found');
+        err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_DEVICE_NOT_FOUND);
+        done();
+      });
+    });
+
+
+    it('getModel with new device and get ""', function (done) {
+      telldus.getModel(deviceId, function (err, result) {
+        result.should.equal('');
+        done(err);
+      });
+    });
+
+
+    it('setModel with bad device and get err', function (done) {
+      telldus.setModel(utils.NON_EXISTING_DEVICE, utils.VALID_MODELS[0], function (err) {
+        err.should.be.an.instanceOf(telldus.errors.TelldusError);
+        err.should.have.property('message', 'Unknown error');
+        err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_UNKNOWN);
+        done();
+      });
+    });
+
+
+    it('setModel with bad model', function (done) {
+      var modelname = 'SHOULD WE ALLOW IT?';
+      telldus.setModel(deviceId, modelname, function (err) {
+        var r = telldus.getModelSync(deviceId);
+        r.should.equal(modelname);
+        done(err);
+      });
+    });
+
+
+    it('setModel', function (done) {
+      telldus.setModel(deviceId, utils.VALID_MODELS[0], function (err) {
+        should.not.exist(err);
+        var r = telldus.getModelSync(deviceId);
+        r.should.equal(utils.VALID_MODELS[0]);
+        done(err);
+      });
+    });
+
+
+    it('getDeviceType with bad device and get err', function (done) {
+      telldus.getDeviceType(utils.NON_EXISTING_DEVICE, function(err, result) {
+        should.not.exist(result);
+        err.should.be.an.instanceOf(telldus.errors.TelldusError);
+        err.should.have.property('message', 'Device not found');
+        err.should.have.property('code', telldus.enums.status.TELLSTICK_ERROR_DEVICE_NOT_FOUND);
+        done();
+      });
+    });
+
+
+    it('getDeviceType', function (done) {
+      telldus.getDeviceType(1, function(err, result) {
+        result.should.be.within(1, 3);
+        done(err);
+      });
+    });
+
+
+    it('removeDevice', function (done) {
+      telldus.removeDevice(deviceId, function (err) {
+        should.not.exist(err);
+        var devices = telldus.getDevicesSync();
+        for(var i=0; i<devices.length; i++){
+          devices[i].id.should.not.equal(deviceId);
+        }
+        done();
+      });
+    });
   });//config related
 
 
