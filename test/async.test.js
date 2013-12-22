@@ -255,6 +255,16 @@ describe('async methods', function () {
     });
 
 
+    it('getNumberOfDevices', function (done) {
+      telldus.getNumberOfDevices(function (err, result) {
+        should.not.exist(err);
+        result.should.be.within(1, 10);
+        done();
+      });
+      
+    });
+
+
     it('removeDevice', function (done) {
       telldus.removeDevice(deviceId, function (err) {
         should.not.exist(err);
