@@ -258,7 +258,7 @@ describe('async methods', function () {
     it('getNumberOfDevices', function (done) {
       telldus.getNumberOfDevices(function (err, result) {
         should.not.exist(err);
-        result.should.be.within(1, 10);
+        result.should.be.within(1, 50);
         done();
       });
       

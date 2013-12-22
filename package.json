@@ -1,5 +1,5 @@
 { "name" : "telldus"
-, "version" : "0.0.6"
+, "version" : "0.0.7"
 , "description" : "node wrapper for telldus-core, based on telldus-core-js"
 , "keywords": ["telldus", "telldus-core", "TellStick", "home automation"]
 , "author": "Robin Nilsson <robinnilsson@gmail.com>"

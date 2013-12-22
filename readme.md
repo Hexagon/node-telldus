@@ -1,7 +1,7 @@
 telldus - Node bindings for telldus-core
 ===
 
-Latest release is 0.0.6, available at npm using ```npm install telldus```
+Latest release is 0.0.7, available at npm using ```npm install telldus```
 
 ---
 
@@ -37,32 +37,47 @@ Make sure telldusd is running on the same machine.
 
 ```javascript
 var telldus = require('telldus');
-var devices = telldus.getDevicesSync();
+
+telldus.getDevices(function(err,devices) {
+  if ( err ) {
+    console.log('Error: ' + err);
+  } else {
+    // A list of all configured devices is returned
+    console.log(deviceList);
+  }
+});
 ```
 
 If you ever get a returnValue from a method like turnOnSync that is 
 not equal to 0 (TELLDUS_SUCCESS) you could check what type of error
 that is using telldus.getErrorString.
 
-
 ---
 
 API
 ===
 
-getDevicesSync
+getDevices
 ----------
 
 Returns an array of device dictionary objects.
 Only configured devices are returned.
 
-Currently only available as a synchronous function.
+Synchronous version: ```javascript var devices = telldus.getDevicesSync();```
 
 Signature:
 
 ```javascript
-var devices = telldus.getDevicesSync();
+telldus.getDevices(function(err,devices) {
+  if ( err ) {
+    console.log('Error: ' + err);
+  } else {
+    // The list of devices is returned
+    console.log(devices);
+  }
+});
 ```
+
 
 ```javascript
 [
@@ -90,7 +105,7 @@ Signature:
 
 ```javascript
 telldus.turnOn(deviceId,function(err) {
-	console.log('deviceId is now ON');
+  console.log('deviceId is now ON');
 });
 ```
 
@@ -112,7 +127,7 @@ Signature:
 
 ```javascript
 telldus.turnOff(deviceId,function(err) {
-	console.log('Device' + deviceId + ' is now OFF');
+  console.log('Device' + deviceId + ' is now OFF');
 });
 ```
 
@@ -134,7 +149,7 @@ Signature:
 
 ```javascript
 telldus.dim(deviceId, level,function(err) {
-	console.log('Device ' + deviceId + ' is now dimmed to level ' + level);
+  console.log('Device ' + deviceId + ' is now dimmed to level ' + level);
 });
 ```
 
@@ -149,7 +164,7 @@ Signature:
 
 ```javascript
 var listener = telldus.addRawDeviceEventListener(function(controllerId, data) {
-	console.log('Raw device event: ' + data);
+  console.log('Raw device event: ' + data);
 });
 ```
 
@@ -170,7 +185,7 @@ Signature:
 
 ```javascript
 var listener = telldus.addDeviceEventListener(function(deviceId, status) {
-	console.log('Device ' + deviceId + ' is now ' + status.status);
+  console.log('Device ' + deviceId + ' is now ' + status.status);
 });
 ```
 
@@ -188,7 +203,7 @@ Signature:
 
 ```javascript
 var listener = telldus.addSensorEventListener(function(deviceId,protocol,model,type,value,timestamp) {
-	console.log('New sensor event received: ',deviceId,protocol,model,type,value,timestamp);
+  console.log('New sensor event received: ',deviceId,protocol,model,type,value,timestamp);
 });
 ```
 
@@ -216,13 +231,13 @@ Synchronous version: ```javascript var errStr = telldus.getErrorStringSync(retur
 Signature:
 
 ```javascript
-  var returnValue = telldus.turnOnSync(deviceId);
-  if(returnValue > 0) {
-  	telldus.getErrorString(returnValue, function (err, errStr) {
-  		console.error('turnOn failed for device ' + deviceId + ', error: ' + errStr);
-  		process.exit(0);
-  	});
-  }
+var returnValue = telldus.turnOnSync(deviceId);
+if(returnValue > 0) {
+  telldus.getErrorString(returnValue, function (err, errStr) {
+    console.error('turnOn failed for device ' + deviceId + ', error: ' + errStr);
+    process.exit(0);
+  });
+}
 
 ```
 

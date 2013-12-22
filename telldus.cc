@@ -60,6 +60,7 @@ namespace telldus_v8 {
     int id;
     char *name;
     char *model;
+    char *protocol;
   };
 
   Local<Object> GetSupportedMethods(int id, int supportedMethods){
@@ -122,12 +123,14 @@ namespace telldus_v8 {
     obj->Set(String::NewSymbol("id"), Number::New(deviceInternals.id));
     obj->Set(String::NewSymbol("methods"), GetSupportedMethods(deviceInternals.id,deviceInternals.supportedMethods));
     obj->Set(String::NewSymbol("model"), String::New(deviceInternals.model, strlen(deviceInternals.model)));
+    obj->Set(String::NewSymbol("protocol"), String::New(deviceInternals.protocol, strlen(deviceInternals.protocol)));
     obj->Set(String::NewSymbol("type"), GetDeviceType(deviceInternals.id,deviceInternals.deviceType));
     obj->Set(String::NewSymbol("status"), GetDeviceStatus(deviceInternals.id,deviceInternals.lastSentCommand,deviceInternals.level));
 
     // Cleanup
     tdReleaseString(deviceInternals.name);
     tdReleaseString(deviceInternals.model);
+    tdReleaseString(deviceInternals.protocol);
 
     return obj;
 
@@ -156,6 +159,7 @@ namespace telldus_v8 {
     deviceInternals.id = tdGetDeviceId( idx );
     deviceInternals.name = tdGetName( deviceInternals.id );
     deviceInternals.model = tdGetModel( deviceInternals.id );
+    deviceInternals.protocol = tdGetProtocol( deviceInternals.id );
 
     deviceInternals.supportedMethods = tdMethods( deviceInternals.id, SUPPORTED_METHODS );
     deviceInternals.deviceType = tdGetDeviceType( deviceInternals.id );
@@ -482,6 +486,7 @@ namespace telldus_v8 {
         break;
       case 26: // getDevices
         work->l = getDevicesRaw();
+	break;
     }
 
   }
