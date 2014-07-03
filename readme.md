@@ -43,7 +43,7 @@ telldus.getDevices(function(err,devices) {
     console.log('Error: ' + err);
   } else {
     // A list of all configured devices is returned
-    console.log(deviceList);
+    console.log(devices);
   }
 });
 ```
