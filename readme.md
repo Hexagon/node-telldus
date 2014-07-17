@@ -185,7 +185,7 @@ Signature:
 
 ```javascript
 var listener = telldus.addDeviceEventListener(function(deviceId, status) {
-  console.log('Device ' + deviceId + ' is now ' + status.status);
+  console.log('Device ' + deviceId + ' is now ' + status.name);
 });
 ```
 
