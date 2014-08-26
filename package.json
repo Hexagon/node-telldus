@@ -1,22 +1,33 @@
-{ "name" : "telldus"
-, "version" : "0.0.7"
-, "description" : "node wrapper for telldus-core, based on telldus-core-js"
-, "keywords": ["telldus", "telldus-core", "TellStick", "home automation"]
-, "author": "Robin Nilsson <robinnilsson@gmail.com>"
-, "repository":{
-        "type": "git"
-      , "url": "git://github.com/Hexagon/node-telldus.git"
-    }
-, "engines": { "node": ">= 0.6.19" }
-, "license": "MIT"
-, "main": "./telldus.js"
-, "scripts": { 
+{
+  "name": "telldus",
+  "version": "0.0.7",
+  "description": "node wrapper for telldus-core, based on telldus-core-js",
+  "keywords": [
+    "telldus",
+    "telldus-core",
+    "TellStick",
+    "home automation"
+  ],
+  "author": "Robin Nilsson <robinnilsson@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Hexagon/node-telldus.git"
+  },
+  "engines": {
+    "node": ">= 0.6.19"
+  },
+  "license": "MIT",
+  "main": "./telldus.js",
+  "scripts": {
     "install": "node-gyp configure build",
     "test": "mocha --reporter spec"
-    }
-, "os" : [ "darwin", "linux" ]
-, "devDependencies": { 
-        "mocha": "*"
-      , "should": "*"
-    }
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "devDependencies": {
+    "mocha": "~1.21.4",
+    "should": "~4.0.4"
+  }
 }

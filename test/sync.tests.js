@@ -49,8 +49,8 @@ describe('sync methods', function(){
       //test methods
       var methods = dev1.methods;
       methods.should.be.an.instanceOf(Array);
-      methods.should.include('TURNON');
-      methods.should.include('TURNOFF');
+      methods.should.containEql('TURNON');
+      methods.should.containEql('TURNOFF');
     });
 
 
@@ -98,7 +98,7 @@ describe('sync methods', function(){
       var p = telldus.getProtocolSync(1);
       p.should.not.equal('');
       p.should.not.equal('UNKNOWN');
-      utils.VALID_PROTOCOLS.should.include(p);
+      utils.VALID_PROTOCOLS.should.containEql(p);
     });
 
 
@@ -126,7 +126,7 @@ describe('sync methods', function(){
       var result = telldus.getModelSync(1);
       result.should.not.equal('UNKNOWN');
       result.should.not.equal('');
-      utils.VALID_MODELS.should.include(result);
+      utils.VALID_MODELS.should.containEql(result);
     });
 
 
