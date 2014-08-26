@@ -165,7 +165,7 @@ describe('async methods', function () {
       telldus.getModel(1, function (err, result) {
         result.should.not.equal('UNKNOWN');
         result.should.not.equal('');
-        utils.VALID_MODELS.should.include(result);
+        utils.VALID_MODELS.should.containEql(result);
         done(err);
       });
     });
