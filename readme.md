@@ -247,3 +247,9 @@ if(returnValue > 0) {
 License and Credits:
 
 This project is licensed under the MIT license and is forked from telldus-core-js (https://github.com/evilmachina/telldus-core-js) by GitHub user evilmachina. 
+
+---
+
+Bugs, issues and feature request:
+
+The sourcecode and bug tracker is hosted on GitHub, https://github.com/Hexagon/node-telldus
