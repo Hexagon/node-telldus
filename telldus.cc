@@ -27,9 +27,9 @@ namespace telldus_v8 {
   struct SensorEventBaton {
     Persistent<Function> callback;
     int sensorId;
-    const char *model;
-    const char *protocol;
-    const char *value;
+    char *model;
+    char *protocol;
+    char *value;
     int ts;
     int dataType;
   };
@@ -37,7 +37,7 @@ namespace telldus_v8 {
   struct RawDeviceEventBaton {
     Persistent<Function> callback;
     int controllerId;
-    const char *data;
+    char *data;
   };
 
   const int SUPPORTED_METHODS =
@@ -286,6 +286,9 @@ namespace telldus_v8 {
     baton->callback->Call(baton->callback, 6, args);
     scope.Close(Undefined());
 
+    free(baton->model);
+    free(baton->protocol);
+    free(baton->value);
     delete baton;
     delete req;
 
@@ -298,11 +301,11 @@ namespace telldus_v8 {
 
     baton->callback = static_cast<Function *>(callbackVoid);
     baton->sensorId = sensorId;
-    baton->protocol = protocol;
-    baton->model = model;
+    baton->protocol = strdup(protocol);
+    baton->model = strdup(model);
     baton->ts = ts;
     baton->dataType = dataType;
-    baton->value = value;
+    baton->value = strdup(value);
 
     uv_work_t* req = new uv_work_t;
     req->data = baton;
@@ -341,6 +344,7 @@ namespace telldus_v8 {
     baton->callback->Call(baton->callback, 2, args);
     scope.Close(Undefined());
 
+    free(baton->data);
     delete baton;
     delete req;
 
@@ -351,7 +355,7 @@ namespace telldus_v8 {
     RawDeviceEventBaton *baton = new RawDeviceEventBaton();
 
     baton->callback = static_cast<Function *>(callbackVoid);
-    baton->data = data;
+    baton->data = strdup(data);
     baton->controllerId = controllerId;
 
     uv_work_t* req = new uv_work_t;
@@ -486,7 +490,7 @@ namespace telldus_v8 {
         break;
       case 26: // getDevices
         work->l = getDevicesRaw();
-	break;
+        break;
     }
 
   }
