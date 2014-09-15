@@ -24,7 +24,8 @@
   },
   "os": [
     "darwin",
-    "linux"
+    "linux",
+    "win32"
   ],
   "devDependencies": {
     "mocha": "~1.21.4",
