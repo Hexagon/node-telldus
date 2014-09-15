@@ -27,9 +27,9 @@
           },
           'include_dirs': [
             'C:\\Program\\Telldus\\Development\\',
-        		'C:\\Program Files\\Telldus\\Development\\',
-        		'C:\\Program Files (x86)\\Telldus\\Development\\'
-	        ]
+            'C:\\Program Files\\Telldus\\Development\\',
+            'C:\\Program Files (x86)\\Telldus\\Development\\'
+          ]
         }]
       ]
     }
