@@ -10,7 +10,7 @@ Installation (From source):
 _Note that the master branch isn't always top notch. If it doesn't compile, try an older revision or install the stable release_
 
 1. Install telldus-core and development libraries, choose one of the following four procedures.
-	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install
+	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install. Note: You'll need to check "Developer files" during install. You'll also need a version of Visual C++ installed.
 	* Linux Ubuntu/Debian prebuilt: 
 		* Follow general guide at http://developer.telldus.com/wiki/TellStickInstallationUbuntu 
 		* Install `telldus-core` and `libtelldus-core-dev`
@@ -27,7 +27,7 @@ _Note that the master branch isn't always top notch. If it doesn't compile, try 
 Installation (From npm):
 
 1. Install telldus-core and development libraries, choose one of the following four procedures.
-	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install
+	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install. Note: You'll need to check "Developer files" during install. You'll also need a version of Visual C++ installed.
 	* Linux Ubuntu/Debian prebuilt: 
 		* Follow general guide at http://developer.telldus.com/wiki/TellStickInstallationUbuntu 
 		* Install `telldus-core` library `libtelldus-core-dev`
