@@ -20,9 +20,17 @@
         	}
         }],
         ['OS == "win"', {
+          'defines': [
+            '_WINDOWS=1',
+          ],
           'link_settings': {
             'libraries': [
-              '-lTelldusCore.lib'
+              '-lTelldusCore'
+            ],
+            'library_dirs': [
+              'C:\\Program\\Telldus\\Development\\',
+              'C:\\Program Files\\Telldus\\Development\\',
+              'C:\\Program Files (x86)\\Telldus\\Development\\'
             ]
           },
           'include_dirs': [
