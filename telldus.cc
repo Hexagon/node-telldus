@@ -260,7 +260,7 @@ namespace telldus_v8 {
     }
 
     Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    Local<Number> num = Number::New(tdRegisterDeviceEvent(&DeviceEventCallback, *callback));
+    Local<Number> num = Number::New(tdRegisterDeviceEvent((TDDeviceEvent)&DeviceEventCallback, *callback));
 
     return scope.Close(num);
 
@@ -323,7 +323,7 @@ namespace telldus_v8 {
     }
 
     Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    Local<Number> num = Number::New(tdRegisterSensorEvent(&SensorEventCallback, *callback));
+    Local<Number> num = Number::New(tdRegisterSensorEvent((TDSensorEvent)&SensorEventCallback, *callback));
 
     return scope.Close(num);
 
@@ -374,7 +374,7 @@ namespace telldus_v8 {
     }
 
     Persistent<Function> callback = Persistent<Function>::New(Handle<Function>::Cast(args[0]));
-    Local<Number> num = Number::New(tdRegisterRawDeviceEvent(&RawDataCallback, *callback));
+    Local<Number> num = Number::New(tdRegisterRawDeviceEvent((TDRawDeviceEvent)&RawDataCallback, *callback));
     return scope.Close(num);
 
   }
