@@ -1,5 +1,5 @@
 {
-  "name": "telldus",
+  "name": "telldus-legacy",
   "version": "0.0.9",
   "description": "node wrapper for telldus-core, based on telldus-core-js",
   "keywords": [
@@ -14,7 +14,7 @@
     "url": "git://github.com/Hexagon/node-telldus.git"
   },
   "engines": {
-    "node": ">= 0.6.19"
+    "node": ">= 0.6.19 <0.12"
   },
   "license": "MIT",
   "main": "./telldus.js",

@@ -1,7 +1,12 @@
-telldus - Node bindings for telldus-core
+telldus-legacy - Node bindings for telldus-core
 ===
 
-Latest release is 0.0.9, available at npm using ```npm install telldus```
+Latest release is 0.0.10, available at npm using ```npm install 
+telldus-legacy```
+
+NOTE THAT THIS MODULE IS TARGETED AT NODE >= 0.6 and < 0.12.
+
+FOR 0.12 AND LATER USE THE REGULAR "telldus" MODULE.
 
 ---
 
@@ -35,7 +40,8 @@ Installation (From npm):
 		* Install `telldus-core`
 	* Linux source install: http://developer.telldus.com/wiki/TellStickInstallationSource
 2. Install node-gyp ```npm install node-gyp``` 
-3. Install this module using npm ```cd yourprojectdirectory``` ```npm install telldus```
+3. Install this module using npm ```cd yourprojectdirectory``` ```npm 
+install telldus-legacy```
 
 ---
 
@@ -44,7 +50,7 @@ Installation (From npm):
 Make sure telldusd is running on the same machine.
 
 ```javascript
-var telldus = require('telldus');
+var telldus = require('telldus-legacy');
 
 telldus.getDevices(function(err,devices) {
   if ( err ) {
