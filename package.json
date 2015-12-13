@@ -1,6 +1,6 @@
 {
   "name": "telldus-legacy",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "node wrapper for telldus-core, based on telldus-core-js",
   "keywords": [
     "telldus",
@@ -11,7 +11,7 @@
   "author": "Robin Nilsson <robinnilsson@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Hexagon/node-telldus.git"
+    "url": "git://github.com/Hexagon/node-telldus.git#legacy"
   },
   "engines": {
     "node": ">= 0.6.19 <0.12"
