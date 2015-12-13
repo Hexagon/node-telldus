@@ -7,7 +7,6 @@ var statusEnum = {
   TELLSTICK_ERROR_UNKNOWN: -99
 };
 
-
 //initialize the telldus library
 telldus.SyncCaller(15, 0, 0, '', '');
 
@@ -186,8 +185,6 @@ process.on('exit', function () {
       }
     });
   };
-
-
 
 })('object' === typeof module ? module.exports : (this.telldus = {}), this);
 
