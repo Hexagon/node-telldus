@@ -101,6 +101,37 @@ telldus.getDevices(function(err,devices) {
 ]
 ```
 
+getSensors
+----------
+
+Signature:
+
+```javascript
+telldus.getSensors(function(err,sensors) {
+  if ( err ) {
+    console.log('Error: ' + err);
+  } else {
+    // The list of sensors and their values is returned
+    console.log(sensors);
+  }
+});
+```
+
+
+```javascript
+  { model: 'temperaturehumidity',
+    protocol: 'mandolyn',
+    id: 41,
+    data: [ 
+      { type: 'TEMPERATURE',
+        value: '17.6',
+        timestamp: '2015-12-14 23:33:01' },
+      { type: 'HUMIDITY',
+        value: '26',
+        timestamp: '2015-12-14 23:33:01' } 
+    ]
+  }
+```
 
 turnOn
 ------

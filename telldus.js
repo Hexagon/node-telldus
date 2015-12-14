@@ -51,6 +51,7 @@ process.on('exit', function () {
   exports.up = function (id, callback) { return nodeAsyncCaller(24, id, 0, '', '', callback); };
   exports.down = function (id, callback) { return nodeAsyncCaller(25, id, 0, '', '', callback); };
   exports.getDevices = function (callback) { return nodeAsyncCaller(26, 0, 0, '', '', callback); };
+  exports.getSensors = function (callback) { return nodeAsyncCaller(27, 0, 0, '', '', callback); };
 
   // Sync versions
   exports.turnOnSync = function (id) { return telldus.SyncCaller(0, id, 0, '', ''); };
@@ -78,7 +79,7 @@ process.on('exit', function () {
   exports.upSync = function (id) { return telldus.SyncCaller(24, id, 0, '', ''); };
   exports.downSync = function (id) { return telldus.SyncCaller(25, id, 0, '', ''); };
   exports.getDevicesSync = function () { return telldus.SyncCaller(26, 0, 0, '', ''); };
-
+  exports.getSensorsSync = function () { return telldus.SyncCaller(27, 0, 0, '', ''); };
 
 
   /**
