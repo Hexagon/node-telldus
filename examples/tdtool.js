@@ -1,22 +1,17 @@
-var telldus = require('..');
-var i;
-var devices = telldus.getDevicesSync();
+var telldus = require('..'),
+	util = require('util'),
 
-var DEVICE_PARAM=3
-var CMD_PARAM=2;
-
-
-// FixMe: Asyncify
-
+	i,
+	devices, sensors;
 
 function syntax(){
 	console.log("--list|-l\t\t\t List devices");
 	console.log("--on|-n <device id>\t\t Turn device on");
-	console.log("--off|-n <device id>\t\t Turn device off");
+	console.log("--off|-f <device id>\t\t Turn device off");
+	console.log("--remove|-r <device id>\t\t Remove device");
+	console.log("--learn|-a <device id>\t\t Learn a new device");
 	process.exit(1);
 }
-
-
 
 function checkAndSet(method, device){
 	//check if TURNON is a valid thing
@@ -30,11 +25,19 @@ function checkAndSet(method, device){
 		}
 	}
 	else {
-		console.log("Unsuported method, %s. %s", device.methods);
+		console.error("Unsuported method, %s. %s", device.methods);
 		process.exit(1);
 	}
 }
 
+function removeDevice(device) {
+	telldus.removeDevice(device.id, function (err) {
+		if (err) {
+			console.error('Could not remove device, error code: ' + err);
+		}
+		console.log('Device %s (%s) removed', device.id, device.name);
+	});
+}
 
 function getDevice(id) {
 	id = isNaN(parseInt(id, 10))  ? id: parseInt(id, 10);
@@ -48,7 +51,9 @@ function getDevice(id) {
 			return d;
 		}
 	}
-	console.log("No such device:%s", id);
+
+	console.error("No such device: %s", id);
+
 	process.exit(1);
 }
 
@@ -59,19 +64,32 @@ function parseArgs(args) {
 		switch (args[i]){
 			case '--on':
 			case '-n':
+				devices = telldus.getDevicesSync();
 				checkAndSet('TURNON', getDevice(args[++i]));
 				break;
 			case '--off':
 			case '-f':
+				devices = telldus.getDevicesSync();
 				checkAndSet('TURNOFF', getDevice(args[++i]));
 				break;
 			case '--list':
 			case '-l':
+				devices = telldus.getDevicesSync();
 				console.log(devices);
+				break;
+			case '--sensors':
+			case '-s':
+				sensors = telldus.getSensors(function(err,sensors){
+					console.log(util.inspect(sensors,false,null));	
+				});
+				break;
+			case '--remove':
+			case '-r':
+				devices = telldus.getDevicesSync();
+				removeDevice(getDevice(args[++i]));
 				break;
 			default:
 				syntax();
-				
 				break;
 		}
 	}

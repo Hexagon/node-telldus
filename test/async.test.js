@@ -52,9 +52,7 @@ describe('async methods', function () {
 
   describe('config related', function () {
   
-    
     var deviceId;
-
 
     before(function (done) {
       telldus.addDevice(function(err, num){
