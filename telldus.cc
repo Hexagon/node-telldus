@@ -84,6 +84,8 @@ namespace telldus_v8 {
     char *protocol;
   };
 
+  uv_mutex_t tdMutex;
+
   Local<Object> GetSupportedMethods(int id, int supportedMethods, Isolate* isolate){
 
     Local<Array> methodsObj = Array::New(isolate);
@@ -140,6 +142,7 @@ namespace telldus_v8 {
   Local<Object> GetDevice( telldusDeviceInternals deviceInternals, Isolate* isolate ) {
 
     Local<Object> obj = Object::New(isolate);
+
     obj->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate,deviceInternals.name));
     obj->Set(String::NewFromUtf8(isolate, "id"), Number::New(isolate,deviceInternals.id));
     obj->Set(String::NewFromUtf8(isolate, "methods"), GetSupportedMethods(deviceInternals.id, deviceInternals.supportedMethods, isolate));
@@ -149,9 +152,11 @@ namespace telldus_v8 {
     obj->Set(String::NewFromUtf8(isolate, "status"), GetDeviceStatus(deviceInternals.id,deviceInternals.lastSentCommand,deviceInternals.level, isolate));
 
     // Cleanup
+    uv_mutex_lock (&tdMutex);
     tdReleaseString(deviceInternals.name);
     tdReleaseString(deviceInternals.model);
     tdReleaseString(deviceInternals.protocol);
+    uv_mutex_unlock (&tdMutex);
 
     return obj;
 
@@ -175,6 +180,8 @@ namespace telldus_v8 {
 
     telldusDeviceInternals deviceInternals;
 
+    uv_mutex_lock (&tdMutex);
+
     deviceInternals.id = tdGetDeviceId( idx );
     deviceInternals.name = tdGetName( deviceInternals.id );
     deviceInternals.model = tdGetModel( deviceInternals.id );
@@ -196,6 +203,8 @@ namespace telldus_v8 {
 
     }
 
+    uv_mutex_unlock (&tdMutex);
+
     return deviceInternals;
 
   }
@@ -208,7 +217,10 @@ namespace telldus_v8 {
    char timeBuf[80];
    time_t timestamp = 0;
    
+   uv_mutex_lock (&tdMutex);
    tdSensorValue(si.protocol, si.model, si.sensorId, currentType, value, DATA_LENGTH, (int *)&timestamp);
+   uv_mutex_unlock (&tdMutex);
+
    strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", localtime(&timestamp));
 
    sv.timeStamp = strdup(timeBuf);
@@ -287,8 +299,10 @@ namespace telldus_v8 {
 
   list<telldusDeviceInternals> getDevicesRaw() {
     
+    uv_mutex_lock (&tdMutex);
     int intNumberOfDevices = tdGetNumberOfDevices();
     list<telldusDeviceInternals> deviceList;
+    uv_mutex_unlock (&tdMutex);
 
     for ( int i = 0 ; i < intNumberOfDevices ; i++ ) {
       deviceList.push_back(getDeviceRaw(i));
@@ -305,6 +319,7 @@ namespace telldus_v8 {
 
    list<telldusSensorInternals> sensorList;
 
+   uv_mutex_lock (&tdMutex);
    while(tdSensor(protocol, DATA_LENGTH, model, DATA_LENGTH, &sensorId, &dataTypes) == TELLSTICK_SUCCESS) {
      telldusSensorInternals t;
      
@@ -317,6 +332,7 @@ namespace telldus_v8 {
      sensorList.push_back(t);
 
    }
+   uv_mutex_unlock (&tdMutex);
 
     return sensorList;
 
@@ -356,12 +372,15 @@ namespace telldus_v8 {
 
     DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(req->data);
 
+    uv_mutex_lock (&tdMutex);
+
     // Get Status
     baton->lastSentCommand = tdLastSentCommand(baton->deviceId, SUPPORTED_METHODS);
     baton->levelNum = 0;
     char *level = 0;
 
     if(baton->lastSentCommand == TELLSTICK_DIM) {
+
 
       // Get level, returned from telldus-core as char
       level = tdLastSentValue(baton->deviceId);
@@ -373,6 +392,8 @@ namespace telldus_v8 {
       tdReleaseString(level);
 
     }
+
+    uv_mutex_unlock (&tdMutex);
 
   }
 
@@ -394,7 +415,7 @@ namespace telldus_v8 {
     func->Call(baton->callback->isolate->GetCurrentContext()->Global(), 2, args);
     
     delete baton;
-    delete req;
+    //delete req;
 
   }
 
@@ -431,7 +452,10 @@ namespace telldus_v8 {
     ctx->callback = value;
     ctx->isolate = isolate;
 
+    uv_mutex_lock (&tdMutex);
     Local<Number> num = Number::New(isolate, tdRegisterDeviceEvent((TDDeviceEvent)&DeviceEventCallback, ctx));
+    uv_mutex_unlock (&tdMutex);
+
     args.GetReturnValue().Set(num);
 
   }
@@ -460,7 +484,7 @@ namespace telldus_v8 {
     func->Call(baton->callback->isolate->GetCurrentContext()->Global(), 6, args);
 
     delete baton;
-    delete req;
+    //delete req;
 
   }
 
@@ -504,7 +528,10 @@ namespace telldus_v8 {
       isolate->ThrowException(exception);
     }
 
+    uv_mutex_lock (&tdMutex);
     Local<Number> num = Number::New(isolate, tdRegisterSensorEvent((TDSensorEvent)&SensorEventCallback, ctx));
+    uv_mutex_unlock (&tdMutex);
+
     args.GetReturnValue().Set(num);
     
   }
@@ -531,7 +558,7 @@ namespace telldus_v8 {
     free(baton->data);
 
     delete baton;
-    delete req;
+    //delete req;
 
   }
 
@@ -566,8 +593,11 @@ namespace telldus_v8 {
     EventContext *ctx = new EventContext();
     ctx->callback = value;
     ctx->isolate = isolate;
-
+    
+    uv_mutex_lock (&tdMutex);
     Local<Number> num = Number::New(isolate, tdRegisterRawDeviceEvent((TDRawDeviceEvent)&RawDataCallback, ctx));
+    uv_mutex_unlock (&tdMutex);
+
     args.GetReturnValue().Set(num);
 
   }
@@ -598,92 +628,147 @@ namespace telldus_v8 {
   };
 
   void RunWork(uv_work_t* req) {
+
     js_work* work = static_cast<js_work*>(req->data);
     switch(work->f) {
       case 0:
+
+        uv_mutex_lock (&tdMutex);
         work->rn = tdTurnOn(work->devID);
+        uv_mutex_unlock (&tdMutex);
+
         break;
       case 1:
+        uv_mutex_lock (&tdMutex);
         work->rn = tdTurnOff(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 2:
+        uv_mutex_lock (&tdMutex);
         work->rn = tdDim(work->devID,(unsigned char)work->v);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 3:
+        uv_mutex_lock (&tdMutex);
         work->rn = tdLearn(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 4:
+        uv_mutex_lock (&tdMutex); 
         work->rn = tdAddDevice();
+        uv_mutex_unlock (&tdMutex);
         break;
       case 5: // SetName
+        uv_mutex_lock (&tdMutex);
         work->rb = tdSetName(work->devID,work->s);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 6: // GetName
+        uv_mutex_lock (&tdMutex);
         work->rs = tdGetName(work->devID);
+        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 7: // SetProtocol
+        uv_mutex_lock (&tdMutex);
         work->rb = tdSetProtocol(work->devID,work->s);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 8: // GetProtocol
+        uv_mutex_lock (&tdMutex);
         work->rs = tdGetProtocol(work->devID);
+        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 9: // SetModel
+        uv_mutex_lock (&tdMutex);
         work->rb = tdSetModel(work->devID,work->s);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 10: // GetModel
+        uv_mutex_lock (&tdMutex);
         work->rs = tdGetModel(work->devID);
+        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 11: // GetDeviceType
+        uv_mutex_lock (&tdMutex);
         work->rn = tdGetDeviceType(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 12:
+        uv_mutex_lock (&tdMutex);
         work->rb = tdRemoveDevice(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 13:
+        uv_mutex_lock (&tdMutex);
         work->rn = tdUnregisterCallback(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 14: // GetModel
+        uv_mutex_lock (&tdMutex);
         work->rs = tdGetErrorString(work->devID);
+        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 15: // tdInit();
+        uv_mutex_lock (&tdMutex);
         tdInit();
+        uv_mutex_unlock (&tdMutex);
         work->rb = true; // tdInit() has no return value, so we augment true for a return value
         break;
       case 16: // tdClose();
+        uv_mutex_lock (&tdMutex);
         tdClose();
+        uv_mutex_unlock (&tdMutex);
         work->rb = true; // tdClose() has no return value, so we augment true for a return value
         break;
       case 17: // tdGetNumberOfDevices();
+        uv_mutex_lock (&tdMutex);
         work->rn = tdGetNumberOfDevices();
+        uv_mutex_unlock (&tdMutex);
         break;
       case 18: // tdStop
+        uv_mutex_lock (&tdMutex);
         work->rn = tdStop(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 19: // tdBell
+        uv_mutex_lock (&tdMutex);
         work->rn = tdBell(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;     
       case 20: // tdGetDeviceId(deviceIndex)
+        uv_mutex_lock (&tdMutex);
         work->rn = tdGetDeviceId(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 21: // tdGetDeviceParameter(deviceId, name, val)
+        uv_mutex_lock (&tdMutex);
         work->rs = tdGetDeviceParameter(work->devID, work->s, work->s2);
+        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 22: // tdSetDeviceParameter(deviceId, name, val)
+        uv_mutex_lock (&tdMutex);
         work->rb = tdSetDeviceParameter(work->devID, work->s, work->s2);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 23: // tdExecute
+        uv_mutex_lock (&tdMutex);
         work->rn = tdExecute(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 24: // tdUp
+        uv_mutex_lock (&tdMutex);
         work->rn = tdUp(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 25: // tdDown
+        uv_mutex_lock (&tdMutex);
         work->rn = tdDown(work->devID);
+        uv_mutex_unlock (&tdMutex);
         break;
       case 26: // getDevices
         work->l = getDevicesRaw();
@@ -853,7 +938,7 @@ namespace telldus_v8 {
     work->callback = ctx;
     work->req.data = work;
 
-    uv_queue_work(uv_default_loop(), &work->req, RunWork, (uv_after_work_cb)RunCallback);
+    uv_queue_work(uv_default_loop(), &work->req, (uv_work_cb)RunWork, (uv_after_work_cb)RunCallback);
 
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, "Running asynchronous process initializer"));
 
@@ -890,89 +975,141 @@ namespace telldus_v8 {
     // Run requested operation
     switch(work->f) {
        case 0:
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdTurnOn(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 1:
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdTurnOff(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 2:
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdDim(work->devID,(unsigned char)work->v);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 3:
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdLearn(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 4:
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdAddDevice();
+          uv_mutex_unlock (&tdMutex);
           break;
        case 5: // SetName
+          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetName(work->devID,work->s);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 6: // GetName
+          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetName(work->devID);
+          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
        case 7: // SetProtocol
+          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetProtocol(work->devID,work->s);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 8: // GetProtocol
+          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetProtocol(work->devID);
+          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
        case 9: // SetModel
+          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetModel(work->devID,work->s);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 10: // GetModel
+          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetModel(work->devID);
+          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
        case 11: // GetDeviceType
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdGetDeviceType(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 12:
+          uv_mutex_lock (&tdMutex); 
           work->rb = tdRemoveDevice(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 13:
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdUnregisterCallback(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
        case 14: // GetModel
+          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetErrorString(work->devID);
+          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
         case 15: // tdInit();
+          uv_mutex_lock (&tdMutex); 
           tdInit();
+          uv_mutex_unlock (&tdMutex);
           work->rb = true; // tdInit() has no return value, so we augment true for a return value
           break;
         case 16: // tdClose();
+          uv_mutex_lock (&tdMutex); 
           tdClose();
+          uv_mutex_unlock (&tdMutex);
           work->rb = true; // tdClose() has no return value, so we augment true for a return value
           break;
         case 17: // tdGetNumberOfDevices();
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdGetNumberOfDevices();
+          uv_mutex_unlock (&tdMutex);
           break;
         case 18: // tdStop
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdStop(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
         case 19: // tdBell
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdBell(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;     
         case 20: // tdGetDeviceId(deviceIndex)
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdGetDeviceId(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
         case 21: // tdGetDeviceParameter(deviceId, name, val)
+          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetDeviceParameter(work->devID, work->s, work->s2);
+          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
         case 22: // tdSetDeviceParameter(deviceId, name, val)
+          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetDeviceParameter(work->devID, work->s, work->s2);
+          uv_mutex_unlock (&tdMutex);
           break;
         case 23: // tdExecute
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdExecute(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
         case 24: // tdUp
+          uv_mutex_lock (&tdMutex); 
           work->rn = tdUp(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
         case 25: // tdDown
+          uv_mutex_lock (&tdMutex);
           work->rn = tdDown(work->devID);
+          uv_mutex_unlock (&tdMutex);
           break;
         case 26: // getDevices
           work->l = getDevicesRaw();
@@ -1037,7 +1174,9 @@ namespace telldus_v8 {
 
     // Check if we have an allocated string from telldus
     if( work->string_used ) {
+      uv_mutex_lock (&tdMutex); 
       tdReleaseString(work->rs);
+      uv_mutex_unlock (&tdMutex); 
     }
 
     free(str_copy); // char* Created in the beginning of this function
@@ -1054,6 +1193,8 @@ namespace telldus_v8 {
 extern "C"
 
 void init(Handle<Object> exports) {
+
+  uv_mutex_init (&telldus_v8::tdMutex);
 
   // Asynchronous function wrapper
   NODE_SET_METHOD(exports, "AsyncCaller", telldus_v8::AsyncCaller);
