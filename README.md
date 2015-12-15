@@ -4,7 +4,7 @@ telldus - Node bindings for telldus-core
 [![npm version](https://badge.fury.io/js/telldus.svg)](https://badge.fury.io/js/telldus)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
-Latest release is 0.0.10, available at npm using ```npm install telldus```
+Latest release is 0.0.11, available at npm using ```npm install telldus```
 
 Note: Support for Node 0.10 and 0.11 is moved to a separate brach and package, available through ```npm install telldus-legacy```
 
