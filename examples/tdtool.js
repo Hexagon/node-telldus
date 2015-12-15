@@ -6,6 +6,7 @@ var telldus = require('..'),
 
 function syntax(){
 	console.log("--list|-l\t\t\t List devices");
+	console.log("--sensors|-s\t\t\t List sensors");
 	console.log("--on|-n <device id>\t\t Turn device on");
 	console.log("--off|-f <device id>\t\t Turn device off");
 	console.log("--remove|-r <device id>\t\t Remove device");

@@ -109,6 +109,8 @@ telldus.getDevices(function(err,devices) {
 getSensors
 ----------
 
+Synchronous version: ```javascript var devices = telldus.getSensorsSync();```
+
 Signature:
 
 ```javascript

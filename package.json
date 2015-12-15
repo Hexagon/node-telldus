@@ -1,6 +1,6 @@
 {
   "name": "telldus",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "node wrapper for telldus-core, based on telldus-core-js",
   "keywords": [
     "telldus",

@@ -22,7 +22,7 @@ namespace telldus_v8 {
   const int DATA_LENGTH = 20;
 
   struct EventContext {
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> callback;
+    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > callback;
     Isolate *isolate;
   };
 
@@ -384,7 +384,7 @@ namespace telldus_v8 {
 
     EventContext *ctx = static_cast<EventContext *>(baton->callback);
 
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate,baton->deviceId),
@@ -425,7 +425,7 @@ namespace telldus_v8 {
     }
 
     v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[0]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> value(isolate, cb);
+    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
 
     EventContext *ctx = new EventContext();
     ctx->callback = value;
@@ -446,7 +446,7 @@ namespace telldus_v8 {
 
     EventContext *ctx = static_cast<EventContext *>(baton->callback);
 
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate,baton->sensorId),
@@ -493,7 +493,7 @@ namespace telldus_v8 {
     v8::HandleScope handleScope(isolate);
 
     v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[0]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> value(isolate, cb);
+    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
 
     EventContext *ctx = new EventContext();
     ctx->callback = value;
@@ -519,7 +519,7 @@ namespace telldus_v8 {
 
     EventContext *ctx = static_cast<EventContext *>(baton->callback);
     
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate, baton->controllerId),
@@ -556,7 +556,7 @@ namespace telldus_v8 {
     v8::HandleScope handleScope(isolate);
 
     v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[0]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> value(isolate, cb);
+    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
 
     if (!args[0]->IsFunction()) {
       v8::Local<v8::Value> exception = Exception::TypeError(v8::String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
@@ -735,7 +735,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return worktype
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -752,7 +752,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return worktype
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -767,7 +767,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return callback function
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -778,7 +778,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return callback function
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -789,7 +789,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return callback functio
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>>)ctx->callback));
+        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -837,7 +837,7 @@ namespace telldus_v8 {
     char * str_copy2 = strdup(*str2); // Deleted at end of RunCallback
 
     v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[5]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> value(isolate, cb);
+    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
 
     EventContext *ctx = new EventContext();
     ctx->callback = value;
