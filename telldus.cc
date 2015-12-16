@@ -22,7 +22,7 @@ namespace telldus_v8 {
   const int DATA_LENGTH = 20;
 
   struct EventContext {
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > callback;
+    Persistent<Function, CopyablePersistentTraits<Function> > callback;
     Isolate *isolate;
   };
 
@@ -84,7 +84,7 @@ namespace telldus_v8 {
     char *protocol;
   };
 
-  uv_mutex_t tdMutex;
+  uv_mutex_t radioMutex;
 
   Local<Object> GetSupportedMethods(int id, int supportedMethods, Isolate* isolate){
 
@@ -152,11 +152,9 @@ namespace telldus_v8 {
     obj->Set(String::NewFromUtf8(isolate, "status"), GetDeviceStatus(deviceInternals.id,deviceInternals.lastSentCommand,deviceInternals.level, isolate));
 
     // Cleanup
-    uv_mutex_lock (&tdMutex);
     tdReleaseString(deviceInternals.name);
     tdReleaseString(deviceInternals.model);
     tdReleaseString(deviceInternals.protocol);
-    uv_mutex_unlock (&tdMutex);
 
     return obj;
 
@@ -180,8 +178,6 @@ namespace telldus_v8 {
 
     telldusDeviceInternals deviceInternals;
 
-    uv_mutex_lock (&tdMutex);
-
     deviceInternals.id = tdGetDeviceId( idx );
     deviceInternals.name = tdGetName( deviceInternals.id );
     deviceInternals.model = tdGetModel( deviceInternals.id );
@@ -203,8 +199,6 @@ namespace telldus_v8 {
 
     }
 
-    uv_mutex_unlock (&tdMutex);
-
     return deviceInternals;
 
   }
@@ -217,9 +211,7 @@ namespace telldus_v8 {
    char timeBuf[80];
    time_t timestamp = 0;
    
-   uv_mutex_lock (&tdMutex);
    tdSensorValue(si.protocol, si.model, si.sensorId, currentType, value, DATA_LENGTH, (int *)&timestamp);
-   uv_mutex_unlock (&tdMutex);
 
    strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", localtime(&timestamp));
 
@@ -299,10 +291,8 @@ namespace telldus_v8 {
 
   list<telldusDeviceInternals> getDevicesRaw() {
     
-    uv_mutex_lock (&tdMutex);
     int intNumberOfDevices = tdGetNumberOfDevices();
     list<telldusDeviceInternals> deviceList;
-    uv_mutex_unlock (&tdMutex);
 
     for ( int i = 0 ; i < intNumberOfDevices ; i++ ) {
       deviceList.push_back(getDeviceRaw(i));
@@ -319,7 +309,6 @@ namespace telldus_v8 {
 
    list<telldusSensorInternals> sensorList;
 
-   uv_mutex_lock (&tdMutex);
    while(tdSensor(protocol, DATA_LENGTH, model, DATA_LENGTH, &sensorId, &dataTypes) == TELLSTICK_SUCCESS) {
      telldusSensorInternals t;
      
@@ -332,7 +321,6 @@ namespace telldus_v8 {
      sensorList.push_back(t);
 
    }
-   uv_mutex_unlock (&tdMutex);
 
     return sensorList;
 
@@ -368,19 +356,45 @@ namespace telldus_v8 {
 
   }
 
-  void DeviceEventCallbackWorking(uv_work_t *req) { 
+  void DeviceHandleClosed(uv_handle_t* handle) {
 
-    DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(req->data);
+    DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(handle->data);
 
-    uv_mutex_lock (&tdMutex);
+    delete baton;
+    delete handle;
+  }
 
-    // Get Status
+  void DeviceCallbackAfter(uv_async_t *handle) {
+
+    DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(handle->data);
+    
+    HandleScope handleScope(baton->callback->isolate);
+
+    Local<Function> func = Local<Function>::New(baton->callback->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)baton->callback->callback));
+
+    Local<Value> args[] = {
+      Number::New(baton->callback->isolate,baton->deviceId),
+      GetDeviceStatus(baton->deviceId,baton->lastSentCommand,baton->levelNum, baton->callback->isolate),
+    };
+
+    func->Call(Null(baton->callback->isolate), 2, args);
+    
+    uv_close((uv_handle_t*) handle, DeviceHandleClosed);
+
+  }
+
+  void DeviceCallback( int deviceId, int method, const char * data, int callbackId, void* callbackVoid ) {
+
+    DeviceEventBaton *baton = new DeviceEventBaton();
+
+    baton->callback = static_cast<EventContext *>(callbackVoid);
+    baton->deviceId = deviceId;
     baton->lastSentCommand = tdLastSentCommand(baton->deviceId, SUPPORTED_METHODS);
     baton->levelNum = 0;
-    char *level = 0;
+
+    char *level;
 
     if(baton->lastSentCommand == TELLSTICK_DIM) {
-
 
       // Get level, returned from telldus-core as char
       level = tdLastSentValue(baton->deviceId);
@@ -393,84 +407,59 @@ namespace telldus_v8 {
 
     }
 
-    uv_mutex_unlock (&tdMutex);
+    uv_async_t *asyncDevice = new uv_async_t;
+    asyncDevice->data = baton;
 
-  }
-
-  void DeviceEventCallbackAfter(uv_work_t *req, int status) {
-
-    DeviceEventBaton *baton = static_cast<DeviceEventBaton *>(req->data);
-    
-    v8::HandleScope handleScope(baton->callback->isolate);
-
-    EventContext *ctx = static_cast<EventContext *>(baton->callback);
-
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
-
-    Local<Value> args[] = {
-      Number::New(baton->callback->isolate,baton->deviceId),
-      GetDeviceStatus(baton->deviceId,baton->lastSentCommand,baton->levelNum, baton->callback->isolate),
-    };
-
-    func->Call(baton->callback->isolate->GetCurrentContext()->Global(), 2, args);
-    
-    delete baton;
-    //delete req;
-
-  }
-
-  void DeviceEventCallback( int deviceId, int method, const char * data, int callbackId, void* callbackVoid ) {
-
-    DeviceEventBaton *baton = new DeviceEventBaton();
-    EventContext *ctx = static_cast<EventContext *>(callbackVoid);
-
-    baton->callback = ctx;
-    baton->deviceId = deviceId;
-
-    uv_work_t* req = new uv_work_t;
-    req->data = baton;
-
-    uv_queue_work(uv_default_loop(), req, (uv_work_cb)DeviceEventCallbackWorking, (uv_after_work_cb)DeviceEventCallbackAfter);
+    // Start event loop and attach callbacks
+    uv_async_init(uv_default_loop(), asyncDevice, DeviceCallbackAfter);
+    uv_async_send(asyncDevice);
 
   }
 
 
-  void addDeviceEventListener(const v8::FunctionCallbackInfo<v8::Value>& args){
+  void addDeviceEventListener(const FunctionCallbackInfo<Value>& args){
 
     Isolate* isolate = args.GetIsolate();
-    v8::HandleScope handleScope(isolate);
+    HandleScope handleScope(isolate);
 
     if (!args[0]->IsFunction()) {
-      v8::Local<v8::Value> exception = Exception::TypeError(v8::String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
       isolate->ThrowException(exception);
     }
 
-    v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[0]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
+    Local<Function> cb = Local<Function>::Cast(args[0]);
+    Persistent<Function, CopyablePersistentTraits<Function> > value(isolate, cb);
 
     EventContext *ctx = new EventContext();
     ctx->callback = value;
     ctx->isolate = isolate;
 
-    uv_mutex_lock (&tdMutex);
-    Local<Number> num = Number::New(isolate, tdRegisterDeviceEvent((TDDeviceEvent)&DeviceEventCallback, ctx));
-    uv_mutex_unlock (&tdMutex);
+    Local<Number> num = Number::New(isolate, tdRegisterDeviceEvent((TDDeviceEvent)&DeviceCallback, ctx));
 
     args.GetReturnValue().Set(num);
 
   }
 
-  void SensorEventCallbackWorking(uv_work_t *req) { }
+  void SensorHandleClosed(uv_handle_t* handle) {
 
-  void SensorEventCallbackAfter(uv_work_t *req, int status) {
+    SensorEventBaton *baton = static_cast<SensorEventBaton *>(handle->data);
+    
+    // Is this ok?
+    free(baton->protocol);
+    free(baton->model);
+    free(baton->value);
 
-    SensorEventBaton *baton = static_cast<SensorEventBaton *>(req->data);
+    delete baton;
+    delete handle;
+  }
 
-    v8::HandleScope handleScope(baton->callback->isolate);
+  void SensorCallbackAfter(uv_async_t* handle) {
 
-    EventContext *ctx = static_cast<EventContext *>(baton->callback);
+    SensorEventBaton *baton = static_cast<SensorEventBaton *>(handle->data);
 
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+    HandleScope scope(baton->callback->isolate);
+    
+    Local<Function> func = Local<Function>::New(baton->callback->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)baton->callback->callback));
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate,baton->sensorId),
@@ -481,16 +470,13 @@ namespace telldus_v8 {
       Number::New(baton->callback->isolate,baton->ts)
     };
 
-    func->Call(baton->callback->isolate->GetCurrentContext()->Global(), 6, args);
+    func->Call(Null(baton->callback->isolate), 6, args);
 
-    delete baton;
-    //delete req;
+    uv_close((uv_handle_t*) handle, SensorHandleClosed);
 
   }
 
-  void SensorEventCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value,
-    
-    int ts, int callbackId, void *callbackVoid ) {
+  void SensorCallback( const char *protocol, const char *model, int sensorId, int dataType, const char *value, int ts, int callbackId, void *callbackVoid ) {
 
     EventContext *ctx = static_cast<EventContext *>(callbackVoid);
 
@@ -504,61 +490,65 @@ namespace telldus_v8 {
     baton->dataType = dataType;
     baton->value = strdup(value);
 
-    uv_work_t* req = new uv_work_t;
-    req->data = baton;
+    uv_async_t *asyncSensor = new uv_async_t;
+    asyncSensor->data = baton;
 
-    uv_queue_work(uv_default_loop(), req, (uv_work_cb)SensorEventCallbackWorking, (uv_after_work_cb)SensorEventCallbackAfter);
+    // Start event loop and attach callbacks
+    uv_async_init(uv_default_loop(), asyncSensor, SensorCallbackAfter);
+    uv_async_send(asyncSensor);
 
   }
 
-  void addSensorEventListener(const v8::FunctionCallbackInfo<v8::Value>& args){
+  void addSensorEventListener(const FunctionCallbackInfo<Value>& args){
 
     Isolate* isolate = args.GetIsolate();
-    v8::HandleScope handleScope(isolate);
+    HandleScope handleScope(isolate);
 
-    v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[0]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
+    Local<Function> cb = Local<Function>::Cast(args[0]);
+    Persistent<Function, CopyablePersistentTraits<Function> > value(isolate, cb);
 
     EventContext *ctx = new EventContext();
     ctx->callback = value;
     ctx->isolate = isolate;
 
     if (!args[0]->IsFunction()) {
-      v8::Local<v8::Value> exception = Exception::TypeError(v8::String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
       isolate->ThrowException(exception);
     }
 
-    uv_mutex_lock (&tdMutex);
-    Local<Number> num = Number::New(isolate, tdRegisterSensorEvent((TDSensorEvent)&SensorEventCallback, ctx));
-    uv_mutex_unlock (&tdMutex);
+    Local<Number> num = Number::New(isolate, tdRegisterSensorEvent((TDSensorEvent)&SensorCallback, ctx));
 
     args.GetReturnValue().Set(num);
     
   }
 
-  void RawDataEventCallbackWorking(uv_work_t *req) { }
+  void RawDataHandleClosed(uv_handle_t* handle) {
 
-  void RawDataEventCallbackAfter(uv_work_t *req, int status) {
-
-    RawDeviceEventBaton *baton = static_cast<RawDeviceEventBaton *>(req->data);
+    RawDeviceEventBaton *baton = static_cast<RawDeviceEventBaton *>(handle->data);
     
-    v8::HandleScope handleScope(baton->callback->isolate);
+    // Is this ok?
+    free(baton->data);
 
-    EventContext *ctx = static_cast<EventContext *>(baton->callback);
+    delete baton;
+    delete handle;
+  }
+
+  void RawDataCallbackAfter(uv_async_t* handle) {
+
+    RawDeviceEventBaton *baton = static_cast<RawDeviceEventBaton *>(handle->data);
+
+    HandleScope scope(baton->callback->isolate);
     
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::New(baton->callback->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+    Local<Function> func = Local<Function>::New(baton->callback->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)baton->callback->callback));
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate, baton->controllerId),
       String::NewFromUtf8(baton->callback->isolate, baton->data),
     };
 
-    func->Call(baton->callback->isolate->GetCurrentContext()->Global(), 2, args);
+    func->Call(Null(baton->callback->isolate), 2, args);
 
-    free(baton->data);
-
-    delete baton;
-    //delete req;
+    uv_close((uv_handle_t*) handle, RawDataHandleClosed);
 
   }
 
@@ -570,23 +560,25 @@ namespace telldus_v8 {
     baton->data = strdup(data);
     baton->controllerId = controllerId;
 
-    uv_work_t* req = new uv_work_t;
-    req->data = baton;
+    uv_async_t *asyncRawData = new uv_async_t;
+    asyncRawData->data = baton;
 
-    uv_queue_work(uv_default_loop(), req, (uv_work_cb)RawDataEventCallbackWorking, (uv_after_work_cb)RawDataEventCallbackAfter);
+    // Start event loop and attach callbacks
+    uv_async_init(uv_default_loop(), asyncRawData, RawDataCallbackAfter);
+    uv_async_send(asyncRawData);
 
   }
 
-  void addRawDeviceEventListener(const v8::FunctionCallbackInfo<v8::Value>& args){
+  void addRawDeviceEventListener(const FunctionCallbackInfo<Value>& args){
     
     Isolate* isolate = args.GetIsolate();
-    v8::HandleScope handleScope(isolate);
+    HandleScope handleScope(isolate);
 
-    v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[0]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
+    Local<Function> cb = Local<Function>::Cast(args[0]);
+    Persistent<Function, CopyablePersistentTraits<Function> > value(isolate, cb);
 
     if (!args[0]->IsFunction()) {
-      v8::Local<v8::Value> exception = Exception::TypeError(v8::String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
       isolate->ThrowException(exception);
     }
 
@@ -594,9 +586,7 @@ namespace telldus_v8 {
     ctx->callback = value;
     ctx->isolate = isolate;
     
-    uv_mutex_lock (&tdMutex);
     Local<Number> num = Number::New(isolate, tdRegisterRawDeviceEvent((TDRawDeviceEvent)&RawDataCallback, ctx));
-    uv_mutex_unlock (&tdMutex);
 
     args.GetReturnValue().Set(num);
 
@@ -633,142 +623,110 @@ namespace telldus_v8 {
     switch(work->f) {
       case 0:
 
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdTurnOn(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
 
         break;
       case 1:
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdTurnOff(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 2:
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdDim(work->devID,(unsigned char)work->v);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 3:
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdLearn(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 4:
-        uv_mutex_lock (&tdMutex); 
         work->rn = tdAddDevice();
-        uv_mutex_unlock (&tdMutex);
         break;
       case 5: // SetName
-        uv_mutex_lock (&tdMutex);
         work->rb = tdSetName(work->devID,work->s);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 6: // GetName
-        uv_mutex_lock (&tdMutex);
         work->rs = tdGetName(work->devID);
-        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 7: // SetProtocol
-        uv_mutex_lock (&tdMutex);
         work->rb = tdSetProtocol(work->devID,work->s);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 8: // GetProtocol
-        uv_mutex_lock (&tdMutex);
         work->rs = tdGetProtocol(work->devID);
-        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 9: // SetModel
-        uv_mutex_lock (&tdMutex);
         work->rb = tdSetModel(work->devID,work->s);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 10: // GetModel
-        uv_mutex_lock (&tdMutex);
         work->rs = tdGetModel(work->devID);
-        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 11: // GetDeviceType
-        uv_mutex_lock (&tdMutex);
         work->rn = tdGetDeviceType(work->devID);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 12:
-        uv_mutex_lock (&tdMutex);
         work->rb = tdRemoveDevice(work->devID);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 13:
-        uv_mutex_lock (&tdMutex);
         work->rn = tdUnregisterCallback(work->devID);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 14: // GetModel
-        uv_mutex_lock (&tdMutex);
         work->rs = tdGetErrorString(work->devID);
-        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 15: // tdInit();
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         tdInit();
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         work->rb = true; // tdInit() has no return value, so we augment true for a return value
         break;
       case 16: // tdClose();
-        uv_mutex_lock (&tdMutex);
         tdClose();
-        uv_mutex_unlock (&tdMutex);
         work->rb = true; // tdClose() has no return value, so we augment true for a return value
         break;
       case 17: // tdGetNumberOfDevices();
-        uv_mutex_lock (&tdMutex);
         work->rn = tdGetNumberOfDevices();
-        uv_mutex_unlock (&tdMutex);
         break;
       case 18: // tdStop
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdStop(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 19: // tdBell
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdBell(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;     
       case 20: // tdGetDeviceId(deviceIndex)
-        uv_mutex_lock (&tdMutex);
         work->rn = tdGetDeviceId(work->devID);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 21: // tdGetDeviceParameter(deviceId, name, val)
-        uv_mutex_lock (&tdMutex);
         work->rs = tdGetDeviceParameter(work->devID, work->s, work->s2);
-        uv_mutex_unlock (&tdMutex);
         work->string_used = true;
         break;
       case 22: // tdSetDeviceParameter(deviceId, name, val)
-        uv_mutex_lock (&tdMutex);
         work->rb = tdSetDeviceParameter(work->devID, work->s, work->s2);
-        uv_mutex_unlock (&tdMutex);
         break;
       case 23: // tdExecute
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdExecute(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 24: // tdUp
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdUp(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 25: // tdDown
-        uv_mutex_lock (&tdMutex);
+        uv_mutex_lock (&radioMutex);
         work->rn = tdDown(work->devID);
-        uv_mutex_unlock (&tdMutex);
+        uv_mutex_unlock (&radioMutex);
         break;
       case 26: // getDevices
         work->l = getDevicesRaw();
@@ -786,7 +744,7 @@ namespace telldus_v8 {
     js_work* work = static_cast<js_work*>(req->data);
     work->string_used = false;
 
-    v8::HandleScope handleScope(work->isolate);
+    HandleScope handleScope(work->isolate);
 
     Handle<Value> argv[3];
 
@@ -796,7 +754,7 @@ namespace telldus_v8 {
     TryCatch try_catch;
 
     EventContext *ctx;
-    v8::Local<v8::Function> func;
+    Local<Function> func;
 
     // Reenter the js-world
     switch(work->f) {
@@ -820,7 +778,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return worktype
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+        func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -837,7 +795,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return worktype
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+        func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -852,7 +810,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return callback function
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+        func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -863,7 +821,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return callback function
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+        func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -874,7 +832,7 @@ namespace telldus_v8 {
         argv[1] = Integer::New(work->isolate, work->f); // Return callback functio
 
         ctx = static_cast<EventContext *>(work->callback);
-        func = v8::Local<v8::Function>::New(work->isolate, ((v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> >)ctx->callback));
+        func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
         func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
@@ -905,11 +863,11 @@ namespace telldus_v8 {
   void AsyncCaller(const FunctionCallbackInfo<Value>& args) {
 
     Isolate* isolate = args.GetIsolate();
-    v8::HandleScope handleScope(isolate);
+    HandleScope handleScope(isolate);
 
     // Make sure we don't get any funky data
     if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString() || !args[4]->IsString()) {
-      v8::Local<v8::Value> exception = Exception::TypeError(v8::String::NewFromUtf8(isolate, "Wrong arguments"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments"));
       isolate->ThrowException(exception);
     }
 
@@ -921,8 +879,8 @@ namespace telldus_v8 {
     String::Utf8Value str2(args[4]);
     char * str_copy2 = strdup(*str2); // Deleted at end of RunCallback
 
-    v8::Local<v8::Function> cb = v8::Local<v8::Function>::Cast(args[5]);
-    v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function> > value(isolate, cb);
+    Local<Function> cb = Local<Function>::Cast(args[5]);
+    Persistent<Function, CopyablePersistentTraits<Function> > value(isolate, cb);
 
     EventContext *ctx = new EventContext();
     ctx->callback = value;
@@ -947,11 +905,11 @@ namespace telldus_v8 {
   void SyncCaller(const FunctionCallbackInfo<Value>& args) {
 
     Isolate* isolate = args.GetIsolate();
-    v8::HandleScope handleScope(isolate);
+    HandleScope handleScope(isolate);
 
     // Make sure we don't get any funky data
     if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString() || !args[4]->IsString()) {
-      v8::Local<v8::Value> exception = Exception::TypeError(v8::String::NewFromUtf8(isolate, "Wrong arguments"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments"));
       isolate->ThrowException(exception);
     }
 
@@ -975,141 +933,109 @@ namespace telldus_v8 {
     // Run requested operation
     switch(work->f) {
        case 0:
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdTurnOn(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
        case 1:
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdTurnOff(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
        case 2:
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdDim(work->devID,(unsigned char)work->v);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
        case 3:
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdLearn(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
        case 4:
-          uv_mutex_lock (&tdMutex); 
           work->rn = tdAddDevice();
-          uv_mutex_unlock (&tdMutex);
           break;
        case 5: // SetName
-          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetName(work->devID,work->s);
-          uv_mutex_unlock (&tdMutex);
           break;
        case 6: // GetName
-          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetName(work->devID);
-          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
        case 7: // SetProtocol
-          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetProtocol(work->devID,work->s);
-          uv_mutex_unlock (&tdMutex);
           break;
        case 8: // GetProtocol
-          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetProtocol(work->devID);
-          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
        case 9: // SetModel
-          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetModel(work->devID,work->s);
-          uv_mutex_unlock (&tdMutex);
           break;
        case 10: // GetModel
-          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetModel(work->devID);
-          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
        case 11: // GetDeviceType
-          uv_mutex_lock (&tdMutex); 
           work->rn = tdGetDeviceType(work->devID);
-          uv_mutex_unlock (&tdMutex);
           break;
        case 12:
-          uv_mutex_lock (&tdMutex); 
           work->rb = tdRemoveDevice(work->devID);
-          uv_mutex_unlock (&tdMutex);
           break;
        case 13:
-          uv_mutex_lock (&tdMutex); 
           work->rn = tdUnregisterCallback(work->devID);
-          uv_mutex_unlock (&tdMutex);
           break;
        case 14: // GetModel
-          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetErrorString(work->devID);
-          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
         case 15: // tdInit();
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           tdInit();
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           work->rb = true; // tdInit() has no return value, so we augment true for a return value
           break;
         case 16: // tdClose();
-          uv_mutex_lock (&tdMutex); 
           tdClose();
-          uv_mutex_unlock (&tdMutex);
           work->rb = true; // tdClose() has no return value, so we augment true for a return value
           break;
         case 17: // tdGetNumberOfDevices();
-          uv_mutex_lock (&tdMutex); 
           work->rn = tdGetNumberOfDevices();
-          uv_mutex_unlock (&tdMutex);
           break;
         case 18: // tdStop
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdStop(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
         case 19: // tdBell
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdBell(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;     
         case 20: // tdGetDeviceId(deviceIndex)
-          uv_mutex_lock (&tdMutex); 
           work->rn = tdGetDeviceId(work->devID);
-          uv_mutex_unlock (&tdMutex);
           break;
         case 21: // tdGetDeviceParameter(deviceId, name, val)
-          uv_mutex_lock (&tdMutex); 
           work->rs = tdGetDeviceParameter(work->devID, work->s, work->s2);
-          uv_mutex_unlock (&tdMutex);
           work->string_used = true;
           break;
         case 22: // tdSetDeviceParameter(deviceId, name, val)
-          uv_mutex_lock (&tdMutex); 
           work->rb = tdSetDeviceParameter(work->devID, work->s, work->s2);
-          uv_mutex_unlock (&tdMutex);
           break;
         case 23: // tdExecute
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdExecute(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
         case 24: // tdUp
-          uv_mutex_lock (&tdMutex); 
+          uv_mutex_lock (&radioMutex); 
           work->rn = tdUp(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
         case 25: // tdDown
-          uv_mutex_lock (&tdMutex);
+          uv_mutex_lock (&radioMutex);
           work->rn = tdDown(work->devID);
-          uv_mutex_unlock (&tdMutex);
+          uv_mutex_unlock (&radioMutex);
           break;
         case 26: // getDevices
           work->l = getDevicesRaw();
@@ -1174,9 +1100,7 @@ namespace telldus_v8 {
 
     // Check if we have an allocated string from telldus
     if( work->string_used ) {
-      uv_mutex_lock (&tdMutex); 
       tdReleaseString(work->rs);
-      uv_mutex_unlock (&tdMutex); 
     }
 
     free(str_copy); // char* Created in the beginning of this function
@@ -1194,7 +1118,7 @@ extern "C"
 
 void init(Handle<Object> exports) {
 
-  uv_mutex_init (&telldus_v8::tdMutex);
+  uv_mutex_init (&telldus_v8::radioMutex);
 
   // Asynchronous function wrapper
   NODE_SET_METHOD(exports, "AsyncCaller", telldus_v8::AsyncCaller);
