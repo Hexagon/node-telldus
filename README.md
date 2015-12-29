@@ -8,6 +8,26 @@ Latest release is 1.0.0, available at npm using ```npm install telldus```
 
 Note: Support for Node 0.10 and 0.11 is moved to a separate brach and package, available through ```npm install telldus-legacy```
 
+Table of contents
+=================
+
+  * [Table of contents](#table-of-contents)
+  * [Installation](#installation)
+    * [From npm](#from-npm)
+    * [From source](#from-source)
+  * [Basic usage](#basic-usage)
+  * [API Overview](#api-overview)
+  * [Examples](#examples)
+    * [getDevices](#getdevices)
+    * [getSensors](#getsensors)
+    * [turnOn](#turnon)
+    * [turnOff](#turnoff)
+    * [dim](#dim)
+    * [addRawDeviceEventListener](#addrawdeviceeventlistener)
+    * [addDeviceEventListener](#adddeviceeventlistener)
+    * [addSensorEventListener](#addsensoreventlistener)
+  * [License and Credits](#license-and-credits)
+  * [Issues](#issues)
 
 Installation 
 ===
@@ -362,7 +382,7 @@ License and Credits
 This project is licensed under the MIT license and is forked from telldus-core-js (https://github.com/evilmachina/telldus-core-js) by GitHub user evilmachina. 
 
 
-Bugs, issues and feature request
+Issues
 ---
 
 The sourcecode and bug tracker is hosted on GitHub, https://github.com/Hexagon/node-telldus
