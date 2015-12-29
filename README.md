@@ -8,9 +8,27 @@ Latest release is 1.0.0, available at npm using ```npm install telldus```
 
 Note: Support for Node 0.10 and 0.11 is moved to a separate brach and package, available through ```npm install telldus-legacy```
 
+
+Installation 
+===
+
+From npm
 ---
 
-Installation (From source):
+1. Install telldus-core and development libraries, choose one of the following four procedures.
+	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install. Note: You'll need to check "Developer files" during install. You'll also need a version of Visual C++ installed.
+	* Linux Ubuntu/Debian prebuilt: 
+		* Follow general guide at http://developer.telldus.com/wiki/TellStickInstallationUbuntu 
+		* Install `telldus-core` library `libtelldus-core-dev`
+	* Arch Linux prebuilt:
+		* Install `telldus-core`
+	* Linux source install: http://developer.telldus.com/wiki/TellStickInstallationSource
+2. Install node-gyp ```npm install node-gyp``` 
+3. Install this module using npm ```cd yourprojectdirectory``` ```npm install telldus```
+
+
+From source
+---
 
 _Note that the master branch isn't always top notch. If it doesn't compile, try an older revision or install the stable release_
 
@@ -27,24 +45,10 @@ _Note that the master branch isn't always top notch. If it doesn't compile, try 
 4. Compile this module ```npm install -g```
 5. Link the module to your project ```cd yourprojectdirectory``` ```npm link telldus```
 
----
 
-Installation (From npm):
 
-1. Install telldus-core and development libraries, choose one of the following four procedures.
-	* Windows, Mac: Install Telldus Center -- go [here](http://download.telldus.se/TellStick/Software/TelldusCenter/) and get the latest version of the appropriate DMG or EXE file and install. Note: You'll need to check "Developer files" during install. You'll also need a version of Visual C++ installed.
-	* Linux Ubuntu/Debian prebuilt: 
-		* Follow general guide at http://developer.telldus.com/wiki/TellStickInstallationUbuntu 
-		* Install `telldus-core` library `libtelldus-core-dev`
-	* Arch Linux prebuilt:
-		* Install `telldus-core`
-	* Linux source install: http://developer.telldus.com/wiki/TellStickInstallationSource
-2. Install node-gyp ```npm install node-gyp``` 
-3. Install this module using npm ```cd yourprojectdirectory``` ```npm install telldus```
-
----
-
-# Basic Usage
+Basic Usage
+===
 
 Make sure telldusd is running on the same machine.
 
@@ -65,7 +69,6 @@ If you ever get a returnValue from a method like turnOnSync that is
 not equal to 0 (TELLDUS_SUCCESS) you could check what type of error
 that is using telldus.getErrorString.
 
----
 
 API Overview
 ===
@@ -353,14 +356,13 @@ if(returnValue > 0) {
 ```
 
 
+License and Credits
 ---
-
-License and Credits:
 
 This project is licensed under the MIT license and is forked from telldus-core-js (https://github.com/evilmachina/telldus-core-js) by GitHub user evilmachina. 
 
----
 
-Bugs, issues and feature request:
+Bugs, issues and feature request
+---
 
 The sourcecode and bug tracker is hosted on GitHub, https://github.com/Hexagon/node-telldus
