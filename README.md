@@ -67,7 +67,72 @@ that is using telldus.getErrorString.
 
 ---
 
-API
+API Overview
+===
+
+| Asynchronous method([params...,] callback(err [, value])) |
+| ---                                         |
+| turnOn(id, callback)                        | 
+| turnOff(id, callback)                       |  
+| dim(id, levl, callback)                     | 
+| learn(id, callback)                         | 
+| addDevice(callback)                         | 
+| setName(id, name, callback)                 | 
+| getName(id, callback)                       | 
+| setProtocol(id, name, callback) )           | 
+| getProtocol(id, callback)                   | 
+| setModel(id, name, callback) )              | 
+| getModel(id, callback)                      | 
+| getDeviceType(id, callback)                 | 
+| removeDevice(id, callback)                  | 
+| removeEventListener(id, callback)           |  
+| getErrorString(id, callback)                | 
+| getNumberOfDevices(callback)                | 
+| stop(id, callback)                          | 
+| bell(id, callback)                          | 
+| getDeviceId(id, callback)                   | 
+| getDeviceParameter(id, name, val, callback) | 
+| setDeviceParameter(id, name, val, callback) | 
+| execute(id, callback)                       | 
+| up(id, callback)                            | 
+| down(id, callback)                          | 
+| getDevices(callback)                        | 
+| getSensors(callback)                        | 
+| addDeviceEventListener(callback)            |
+| addSensorEventListener(callback)            |
+| addRawDeviceEventListener(callback)         |
+
+| Synchronous method(params)                  |
+| ---                                         |
+| turnOnSync(id)                              | 
+| turnOffSync(id)                             |  
+| dimSync(id, levl)                           | 
+| learnSync(id)                               | 
+| addDeviceSync(callback)                     | 
+| setNameSync(id, name)                       | 
+| getNameSync(id)                             | 
+| setProtocolSync(id, name) )                 | 
+| getProtocolSync(id)                         | 
+| setModelSync(id, name) )                    | 
+| getModelSync(id)                            | 
+| getDeviceTypeSync(id)                       | 
+| removeDeviceSync(id)                        | 
+| removeEventListenerSync(id)                 |  
+| getErrorStringSync(id)                      | 
+| getNumberOfDevicesSync(callback)            | 
+| stopSync(id)                                | 
+| bellSync(id)                                | 
+| getDeviceIdSync(id)                         | 
+| getDeviceParameterSync(id, name, val)       | 
+| setDeviceParameterSync(id, name, val)       | 
+| executeSync(id)                             | 
+| upSync(id)                                  | 
+| downSync(id)                                | 
+| getDevicesSync()                            | 
+| getSensorsSync()                            | 
+
+
+Examples
 ===
 
 getDevices
