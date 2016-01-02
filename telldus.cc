@@ -244,46 +244,48 @@ namespace telldus_v8 {
         cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
         methodsObj->Set(i++, cur);
     }
-    if (si.dataTypes & TELLSTICK_RAINRATE) {
-        Local<Object> cur = Object::New(isolate);
-        sensorValue sv =  GetSensorValue(TELLSTICK_RAINRATE, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "RAINRATE"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-        methodsObj->Set(i++, cur);
-    }
-    if (si.dataTypes & TELLSTICK_RAINTOTAL) {
-        Local<Object> cur = Object::New(isolate);
-       sensorValue sv =   GetSensorValue(TELLSTICK_RAINTOTAL, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "RAINTOTAL"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)),
-        methodsObj->Set(i++, cur);
-    }
-    if (si.dataTypes & TELLSTICK_WINDDIRECTION) {
-        Local<Object> cur = Object::New(isolate);
-        sensorValue sv =  GetSensorValue(TELLSTICK_WINDDIRECTION, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDDIRECTION"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-        methodsObj->Set(i++, cur);
-    }
-    if (si.dataTypes & TELLSTICK_WINDAVERAGE) {
-        Local<Object> cur = Object::New(isolate);
-        sensorValue sv =  GetSensorValue(TELLSTICK_WINDAVERAGE, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDAVERAGE"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)),
-        methodsObj->Set(i++, cur);
-    }
-    if (si.dataTypes & TELLSTICK_WINDGUST) {
-        Local<Object> cur = Object::New(isolate);
-        sensorValue sv =  GetSensorValue(TELLSTICK_WINDGUST, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDGUST"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-        methodsObj->Set(i++, cur);
-    }
+    #ifdef TELLSTICK_RAINRATE
+      if (si.dataTypes & TELLSTICK_RAINRATE) {
+          Local<Object> cur = Object::New(isolate);
+          sensorValue sv =  GetSensorValue(TELLSTICK_RAINRATE, si);
+          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "RAINRATE"));
+          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
+          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
+          methodsObj->Set(i++, cur);
+      }
+      if (si.dataTypes & TELLSTICK_RAINTOTAL) {
+          Local<Object> cur = Object::New(isolate);
+         sensorValue sv =   GetSensorValue(TELLSTICK_RAINTOTAL, si);
+          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "RAINTOTAL"));
+          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
+          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)),
+          methodsObj->Set(i++, cur);
+      }
+      if (si.dataTypes & TELLSTICK_WINDDIRECTION) {
+          Local<Object> cur = Object::New(isolate);
+          sensorValue sv =  GetSensorValue(TELLSTICK_WINDDIRECTION, si);
+          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDDIRECTION"));
+          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
+          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
+          methodsObj->Set(i++, cur);
+      }
+      if (si.dataTypes & TELLSTICK_WINDAVERAGE) {
+          Local<Object> cur = Object::New(isolate);
+          sensorValue sv =  GetSensorValue(TELLSTICK_WINDAVERAGE, si);
+          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDAVERAGE"));
+          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
+          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)),
+          methodsObj->Set(i++, cur);
+      }
+      if (si.dataTypes & TELLSTICK_WINDGUST) {
+          Local<Object> cur = Object::New(isolate);
+          sensorValue sv =  GetSensorValue(TELLSTICK_WINDGUST, si);
+          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDGUST"));
+          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
+          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
+          methodsObj->Set(i++, cur);
+      }
+    #endif
 
     return methodsObj;
 
