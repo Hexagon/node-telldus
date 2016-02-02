@@ -9,7 +9,7 @@
             	'/Library/Frameworks/TelldusCore.framework/Headers'
             ],
             'libraries': [
-            	'/Library/Frameworks/TelldusCore.framework'
+            	'/Library/Frameworks/TelldusCore.framework/telldusCore'
             ]
         }],
         ['OS=="linux"', {
