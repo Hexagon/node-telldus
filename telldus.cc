@@ -10,6 +10,7 @@
 #include <v8.h>
 
 #include <uv.h>
+#include <time.h>
 
 #include <telldus-core.h>
 
