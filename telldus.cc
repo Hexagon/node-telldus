@@ -754,7 +754,7 @@ namespace telldus_v8 {
     // This makes it possible to catch
     // the exception from JavaScript land using the
     // process.on('uncaughtException') event.
-    TryCatch try_catch;
+    TryCatch try_catch(work->isolate);
 
     EventContext *ctx;
     Local<Function> func;
