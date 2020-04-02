@@ -3,6 +3,10 @@
     {
     "target_name": "telldus",
     "sources": [ "telldus.cc" ],
+    "cflags": [
+        "-Wno-cast-function-type",
+        "-Wno-unused-result"
+    ],
     "conditions": [
         ['OS=="mac"', {
             'include_dirs': [
