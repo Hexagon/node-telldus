@@ -93,15 +93,15 @@ namespace telldus_v8 {
 
     int i = 0;
 
-    if (supportedMethods & TELLSTICK_TURNON)  methodsObj->Set(i++, String::NewFromUtf8(isolate, "TURNON"));
-    if (supportedMethods & TELLSTICK_TURNOFF) methodsObj->Set(i++, String::NewFromUtf8(isolate, "TURNOFF"));
-    if (supportedMethods & TELLSTICK_BELL) methodsObj->Set(i++, String::NewFromUtf8(isolate, "BELL"));
-    if (supportedMethods & TELLSTICK_TOGGLE) methodsObj->Set(i++, String::NewFromUtf8(isolate, "TOGGLE"));
-    if (supportedMethods & TELLSTICK_DIM)  methodsObj->Set(i++, String::NewFromUtf8(isolate, "DIM"));
-    if (supportedMethods & TELLSTICK_UP) methodsObj->Set(i++, String::NewFromUtf8(isolate, "UP"));
-    if (supportedMethods & TELLSTICK_DOWN) methodsObj->Set(i++, String::NewFromUtf8(isolate, "DOWN"));
-    if (supportedMethods & TELLSTICK_STOP) methodsObj->Set(i++, String::NewFromUtf8(isolate, "STOP"));
-    if (supportedMethods & TELLSTICK_LEARN) methodsObj->Set(i++, String::NewFromUtf8(isolate, "LEARN"));
+    if (supportedMethods & TELLSTICK_TURNON) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "TURNON", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_TURNOFF) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "TURNOFF", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_BELL) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "BELL", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_TOGGLE) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "TOGGLE", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_DIM) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "DIM", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_UP) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "UP", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_DOWN) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "DOWN", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_STOP) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "STOP", v8::NewStringType::kNormal).ToLocalChecked());
+    if (supportedMethods & TELLSTICK_LEARN) methodsObj->Set(isolate->GetCurrentContext(), i++, String::NewFromUtf8(isolate, "LEARN", v8::NewStringType::kNormal).ToLocalChecked());
 
     return methodsObj;
 
@@ -109,11 +109,11 @@ namespace telldus_v8 {
 
   Local<String> GetDeviceType(int id, int type, Isolate* isolate){
 
-    if(type & TELLSTICK_TYPE_DEVICE) return String::NewFromUtf8(isolate, "DEVICE");
-    if(type & TELLSTICK_TYPE_GROUP) return String::NewFromUtf8(isolate, "GROUP");
-    if(type & TELLSTICK_TYPE_SCENE) return String::NewFromUtf8(isolate, "SCENE");
+    if(type & TELLSTICK_TYPE_DEVICE) return String::NewFromUtf8(isolate, "DEVICE", v8::NewStringType::kNormal).ToLocalChecked();
+    if(type & TELLSTICK_TYPE_GROUP) return String::NewFromUtf8(isolate, "GROUP", v8::NewStringType::kNormal).ToLocalChecked();
+    if(type & TELLSTICK_TYPE_SCENE) return String::NewFromUtf8(isolate, "SCENE", v8::NewStringType::kNormal).ToLocalChecked();
 
-    return String::NewFromUtf8(isolate, "UNKNOWN");
+    return String::NewFromUtf8(isolate, "UNKNOWN", v8::NewStringType::kNormal).ToLocalChecked();
 
   }
 
@@ -123,17 +123,17 @@ namespace telldus_v8 {
 
     switch(lastSentCommand) {
       case TELLSTICK_TURNON:
-        status->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate, "ON"));
+        status->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "name", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "ON", v8::NewStringType::kNormal).ToLocalChecked());
         break;
       case TELLSTICK_TURNOFF:
-        status->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate, "OFF"));
+        status->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "name", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "OFF", v8::NewStringType::kNormal).ToLocalChecked());
         break;
       case TELLSTICK_DIM:
-        status->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate, "DIM"));
-        status->Set(String::NewFromUtf8(isolate, "level"), Number::New(isolate, level));
+        status->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "name", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "DIM", v8::NewStringType::kNormal).ToLocalChecked());
+        status->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "level", v8::NewStringType::kNormal).ToLocalChecked(), Number::New(isolate, level));
         break;
       default:
-        status->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate, "UNNKOWN"));
+        status->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "name", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "UNNKOWN", v8::NewStringType::kNormal).ToLocalChecked());
     }
 
     return status;
@@ -144,13 +144,13 @@ namespace telldus_v8 {
 
     Local<Object> obj = Object::New(isolate);
 
-    obj->Set(String::NewFromUtf8(isolate, "name"), String::NewFromUtf8(isolate,deviceInternals.name));
-    obj->Set(String::NewFromUtf8(isolate, "id"), Number::New(isolate,deviceInternals.id));
-    obj->Set(String::NewFromUtf8(isolate, "methods"), GetSupportedMethods(deviceInternals.id, deviceInternals.supportedMethods, isolate));
-    obj->Set(String::NewFromUtf8(isolate, "model"), String::NewFromUtf8(isolate,deviceInternals.model));
-    obj->Set(String::NewFromUtf8(isolate, "protocol"), String::NewFromUtf8(isolate,deviceInternals.protocol));
-    obj->Set(String::NewFromUtf8(isolate, "type"), GetDeviceType(deviceInternals.id,deviceInternals.deviceType, isolate));
-    obj->Set(String::NewFromUtf8(isolate, "status"), GetDeviceStatus(deviceInternals.id,deviceInternals.lastSentCommand,deviceInternals.level, isolate));
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "name", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate,deviceInternals.name, v8::NewStringType::kNormal).ToLocalChecked());
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "id", v8::NewStringType::kNormal).ToLocalChecked(), Number::New(isolate,deviceInternals.id));
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "methods", v8::NewStringType::kNormal).ToLocalChecked(), GetSupportedMethods(deviceInternals.id, deviceInternals.supportedMethods, isolate));
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "model", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate,deviceInternals.model, v8::NewStringType::kNormal).ToLocalChecked());
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "protocol", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate,deviceInternals.protocol, v8::NewStringType::kNormal).ToLocalChecked());
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), GetDeviceType(deviceInternals.id,deviceInternals.deviceType, isolate));
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "status", v8::NewStringType::kNormal).ToLocalChecked(), GetDeviceStatus(deviceInternals.id,deviceInternals.lastSentCommand,deviceInternals.level, isolate));
 
     // Cleanup
     tdReleaseString(deviceInternals.name);
@@ -167,7 +167,7 @@ namespace telldus_v8 {
     Local<Array> devices = Array::New(isolate,t.size());
     int i=0;
     for (list<telldusDeviceInternals>::const_iterator iterator = t.begin(), end = t.end(); iterator != end; ++iterator) {
-        devices->Set(i, GetDevice(*iterator, isolate));
+        devices->Set(isolate->GetCurrentContext(), i, GetDevice(*iterator, isolate));
         i++;
     }
 
@@ -232,59 +232,59 @@ namespace telldus_v8 {
     if (si.dataTypes & TELLSTICK_TEMPERATURE) {
         Local<Object> cur = Object::New(isolate);
         sensorValue sv =  GetSensorValue(TELLSTICK_TEMPERATURE, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "TEMPERATURE"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-        methodsObj->Set(i++, cur);
+        cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "TEMPERATURE", v8::NewStringType::kNormal).ToLocalChecked());
+        cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+        cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+        methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
     }
     if (si.dataTypes & TELLSTICK_HUMIDITY) {
         Local<Object> cur = Object::New(isolate);
         sensorValue sv =  GetSensorValue(TELLSTICK_HUMIDITY, si);
-        cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "HUMIDITY"));
-        cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
-        cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-        methodsObj->Set(i++, cur);
+        cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "HUMIDITY", v8::NewStringType::kNormal).ToLocalChecked());
+        cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+        cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+        methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
     }
     #ifdef TELLSTICK_RAINRATE
       if (si.dataTypes & TELLSTICK_RAINRATE) {
           Local<Object> cur = Object::New(isolate);
           sensorValue sv =  GetSensorValue(TELLSTICK_RAINRATE, si);
-          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "RAINRATE"));
-          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
-          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-          methodsObj->Set(i++, cur);
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "RAINRATE", v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+          methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
       }
       if (si.dataTypes & TELLSTICK_RAINTOTAL) {
           Local<Object> cur = Object::New(isolate);
          sensorValue sv =   GetSensorValue(TELLSTICK_RAINTOTAL, si);
-          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "RAINTOTAL"));
-          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
-          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)),
-          methodsObj->Set(i++, cur);
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "RAINTOTAL", v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+          methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
       }
       if (si.dataTypes & TELLSTICK_WINDDIRECTION) {
           Local<Object> cur = Object::New(isolate);
           sensorValue sv =  GetSensorValue(TELLSTICK_WINDDIRECTION, si);
-          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDDIRECTION"));
-          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
-          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-          methodsObj->Set(i++, cur);
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "WINDDIRECTION", v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+          methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
       }
       if (si.dataTypes & TELLSTICK_WINDAVERAGE) {
           Local<Object> cur = Object::New(isolate);
           sensorValue sv =  GetSensorValue(TELLSTICK_WINDAVERAGE, si);
-          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDAVERAGE"));
-          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)),
-          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)),
-          methodsObj->Set(i++, cur);
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "WINDAVERAGE", v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+          methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
       }
       if (si.dataTypes & TELLSTICK_WINDGUST) {
           Local<Object> cur = Object::New(isolate);
           sensorValue sv =  GetSensorValue(TELLSTICK_WINDGUST, si);
-          cur->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, "WINDGUST"));
-          cur->Set(String::NewFromUtf8(isolate, "value"), String::NewFromUtf8(isolate, sv.value)), 
-          cur->Set(String::NewFromUtf8(isolate, "timestamp"), String::NewFromUtf8(isolate, sv.timeStamp)), 
-          methodsObj->Set(i++, cur);
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "type", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, "WINDGUST", v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "value", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.value, v8::NewStringType::kNormal).ToLocalChecked());
+          cur->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "timestamp", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate, sv.timeStamp, v8::NewStringType::kNormal).ToLocalChecked());
+          methodsObj->Set(isolate->GetCurrentContext(), i++, cur);
       }
     #endif
 
@@ -333,10 +333,10 @@ namespace telldus_v8 {
 
     Local<Object> obj = Object::New(isolate);
 
-    obj->Set(String::NewFromUtf8(isolate, "model"), String::NewFromUtf8(isolate,sensorInternals.model));
-    obj->Set(String::NewFromUtf8(isolate, "protocol"), String::NewFromUtf8(isolate,sensorInternals.protocol));
-    obj->Set(String::NewFromUtf8(isolate, "id"), Number::New(isolate, sensorInternals.sensorId));
-    obj->Set(String::NewFromUtf8(isolate, "data"), GetSupportedSensorValues(sensorInternals, isolate));
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "model", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate,sensorInternals.model, v8::NewStringType::kNormal).ToLocalChecked());
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "protocol", v8::NewStringType::kNormal).ToLocalChecked(), String::NewFromUtf8(isolate,sensorInternals.protocol, v8::NewStringType::kNormal).ToLocalChecked());
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "id", v8::NewStringType::kNormal).ToLocalChecked(), Number::New(isolate, sensorInternals.sensorId));
+    obj->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "data", v8::NewStringType::kNormal).ToLocalChecked(), GetSupportedSensorValues(sensorInternals, isolate));
 
     free(sensorInternals.model);
     free(sensorInternals.protocol);
@@ -351,7 +351,7 @@ namespace telldus_v8 {
     Local<Array> sensors = Array::New(isolate,s.size());
     int i=0;
     for (list<telldusSensorInternals>::const_iterator iterator = s.begin(), end = s.end(); iterator != end; ++iterator) {
-      sensors->Set(i, GetSensor(*iterator, isolate));
+      sensors->Set(isolate->GetCurrentContext(), i, GetSensor(*iterator, isolate));
       i++;
     }
 
@@ -380,7 +380,7 @@ namespace telldus_v8 {
       GetDeviceStatus(baton->deviceId,baton->lastSentCommand,baton->levelNum, baton->callback->isolate),
     };
 
-    func->Call(Null(baton->callback->isolate), 2, args);
+    func->Call(baton->callback->isolate->GetCurrentContext(), Null(baton->callback->isolate), 2, args);
     
     uv_close((uv_handle_t*) handle, DeviceHandleClosed);
 
@@ -426,7 +426,7 @@ namespace telldus_v8 {
     HandleScope handleScope(isolate);
 
     if (!args[0]->IsFunction()) {
-      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)", v8::NewStringType::kNormal).ToLocalChecked());
       isolate->ThrowException(exception);
     }
 
@@ -466,14 +466,14 @@ namespace telldus_v8 {
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate,baton->sensorId),
-      String::NewFromUtf8(baton->callback->isolate, baton->model),
-      String::NewFromUtf8(baton->callback->isolate, baton->protocol),
+      String::NewFromUtf8(baton->callback->isolate, baton->model, v8::NewStringType::kNormal).ToLocalChecked(),
+      String::NewFromUtf8(baton->callback->isolate, baton->protocol, v8::NewStringType::kNormal).ToLocalChecked(),
       Number::New(baton->callback->isolate,baton->dataType),
-      String::NewFromUtf8(baton->callback->isolate, baton->value),
+      String::NewFromUtf8(baton->callback->isolate, baton->value, v8::NewStringType::kNormal).ToLocalChecked(),
       Number::New(baton->callback->isolate,baton->ts)
     };
 
-    func->Call(Null(baton->callback->isolate), 6, args);
+    func->Call(baton->callback->isolate->GetCurrentContext(), Null(baton->callback->isolate), 6, args);
 
     uv_close((uv_handle_t*) handle, SensorHandleClosed);
 
@@ -515,7 +515,7 @@ namespace telldus_v8 {
     ctx->isolate = isolate;
 
     if (!args[0]->IsFunction()) {
-      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)", v8::NewStringType::kNormal).ToLocalChecked());
       isolate->ThrowException(exception);
     }
 
@@ -546,10 +546,10 @@ namespace telldus_v8 {
 
     Local<Value> args[] = {
       Number::New(baton->callback->isolate, baton->controllerId),
-      String::NewFromUtf8(baton->callback->isolate, baton->data),
+      String::NewFromUtf8(baton->callback->isolate, baton->data, v8::NewStringType::kNormal).ToLocalChecked(),
     };
 
-    func->Call(Null(baton->callback->isolate), 2, args);
+    func->Call(baton->callback->isolate->GetCurrentContext(), Null(baton->callback->isolate), 2, args);
 
     uv_close((uv_handle_t*) handle, RawDataHandleClosed);
 
@@ -581,7 +581,7 @@ namespace telldus_v8 {
     Persistent<Function, CopyablePersistentTraits<Function> > value(isolate, cb);
 
     if (!args[0]->IsFunction()) {
-      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Expected 1 argument: (function callback)", v8::NewStringType::kNormal).ToLocalChecked());
       isolate->ThrowException(exception);
     }
 
@@ -749,7 +749,7 @@ namespace telldus_v8 {
 
     HandleScope handleScope(work->isolate);
 
-    Handle<Value> argv[3];
+    Local<Value> argv[3];
 
     // This makes it possible to catch
     // the exception from JavaScript land using the
@@ -782,7 +782,7 @@ namespace telldus_v8 {
 
         ctx = static_cast<EventContext *>(work->callback);
         func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
-        func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
+        func->Call(work->isolate->GetCurrentContext(), work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
 
@@ -799,7 +799,7 @@ namespace telldus_v8 {
 
         ctx = static_cast<EventContext *>(work->callback);
         func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
-        func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
+        func->Call(work->isolate->GetCurrentContext(), work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
 
@@ -809,12 +809,12 @@ namespace telldus_v8 {
       case 10:
       case 14:
       case 21:
-        argv[0] = String::NewFromUtf8(work->isolate, work->rs); // Return string value
+        argv[0] = String::NewFromUtf8(work->isolate, work->rs, v8::NewStringType::kNormal).ToLocalChecked(); // Return string value
         argv[1] = Integer::New(work->isolate, work->f); // Return callback function
 
         ctx = static_cast<EventContext *>(work->callback);
         func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
-        func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
+        func->Call(work->isolate->GetCurrentContext(), work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
 
@@ -825,7 +825,7 @@ namespace telldus_v8 {
 
         ctx = static_cast<EventContext *>(work->callback);
         func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
-        func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
+        func->Call(work->isolate->GetCurrentContext(), work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
 
@@ -836,7 +836,7 @@ namespace telldus_v8 {
 
         ctx = static_cast<EventContext *>(work->callback);
         func = Local<Function>::New(work->isolate, ((Persistent<Function, CopyablePersistentTraits<Function> >)ctx->callback));
-        func->Call(work->isolate->GetCurrentContext()->Global(), 2, argv);
+        func->Call(work->isolate->GetCurrentContext(), work->isolate->GetCurrentContext()->Global(), 2, argv);
 
         break;
 
@@ -870,16 +870,16 @@ namespace telldus_v8 {
 
     // Make sure we don't get any funky data
     if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString() || !args[4]->IsString()) {
-      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments", v8::NewStringType::kNormal).ToLocalChecked());
       isolate->ThrowException(exception);
     }
 
     // Make a deep copy of the string argument as we don't want 
     // it memory managed by v8 in the worker thread
-    String::Utf8Value str(args[3]);
+    String::Utf8Value str(isolate, args[3]);
     char * str_copy = strdup(*str); // Deleted at end of RunCallback
 
-    String::Utf8Value str2(args[4]);
+    String::Utf8Value str2(isolate, args[4]);
     char * str_copy2 = strdup(*str2); // Deleted at end of RunCallback
 
     Local<Function> cb = Local<Function>::Cast(args[5]);
@@ -890,9 +890,9 @@ namespace telldus_v8 {
     ctx->isolate = isolate;
 
     js_work* work = new js_work;
-    work->f = args[0]->NumberValue(); // Worktype
-    work->devID = args[1]->NumberValue(); // Device ID
-    work->v = args[2]->NumberValue(); // Arbitrary number value
+    work->f = args[0].As<Integer>()->Value(); // Worktype
+    work->devID = args[1].As<Integer>()->Value(); // Device ID
+    work->v = args[2].As<Integer>()->Value(); // Arbitrary number value
     work->s = str_copy; // Arbitrary string value
     work->s2 = str_copy2; // Arbitrary string value
     work->isolate = isolate; 
@@ -901,7 +901,7 @@ namespace telldus_v8 {
 
     uv_queue_work(uv_default_loop(), &work->req, (uv_work_cb)RunWork, (uv_after_work_cb)RunCallback);
 
-    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "Running asynchronous process initializer"));
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, "Running asynchronous process initializer", v8::NewStringType::kNormal).ToLocalChecked());
 
   }
 
@@ -912,21 +912,21 @@ namespace telldus_v8 {
 
     // Make sure we don't get any funky data
     if(!args[0]->IsNumber() || !args[1]->IsNumber() || !args[2]->IsNumber() || !args[3]->IsString() || !args[4]->IsString()) {
-      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments"));
+      Local<Value> exception = Exception::TypeError(String::NewFromUtf8(isolate, "Wrong arguments", v8::NewStringType::kNormal).ToLocalChecked());
       isolate->ThrowException(exception);
     }
 
     // Make a deep copy of the string argument
-    String::Utf8Value str(args[3]);
+    String::Utf8Value str(isolate, args[3]);
     char * str_copy = strdup(*str); // Deleted at end of this function
 
-    String::Utf8Value str2(args[4]);
+    String::Utf8Value str2(isolate, args[4]);
     char * str_copy2 = strdup(*str2); // Deleted at end of this function
 
     js_work* work = new js_work;
-    work->f = args[0]->NumberValue(); // Worktype
-    work->devID = args[1]->NumberValue(); // Device ID
-    work->v = args[2]->NumberValue(); // Arbitrary number value
+    work->f = args[0].As<Integer>()->Value(); // Worktype
+    work->devID = args[1].As<Integer>()->Value(); // Device ID
+    work->v = args[2].As<Integer>()->Value(); // Arbitrary number value
     work->s = str_copy; // Arbitrary string value
     work->s2 = str_copy2; // Arbitrary string value
     work->isolate = isolate;
@@ -1042,12 +1042,13 @@ namespace telldus_v8 {
           break;
         case 26: // getDevices
           work->l = getDevicesRaw();
+	  [[fallthrough]];
         case 27: // getSensors
           work->si = getSensorsRaw();         
     }
 
     // Run callback
-    Handle<Value> argv;
+    Local<Value> argv;
 
     // Run the actual callback
     switch(work->f) {
@@ -1087,7 +1088,7 @@ namespace telldus_v8 {
       case 10:
       case 14:
       case 21:
-        argv = String::NewFromUtf8(isolate, work->rs); // Return string value
+        argv = String::NewFromUtf8(isolate, work->rs, v8::NewStringType::kNormal).ToLocalChecked(); // Return string value
         break;
 
       // Return list<telldusDeviceInternals>
@@ -1119,7 +1120,7 @@ namespace telldus_v8 {
 
 extern "C"
 
-void init(Handle<Object> exports) {
+void init(Local<Object> exports) {
 
   uv_mutex_init (&telldus_v8::radioMutex);
 
